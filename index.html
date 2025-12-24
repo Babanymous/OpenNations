@@ -24,6 +24,7 @@
         .btn-red { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
         .btn-green { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
         .btn-amber { background: linear-gradient(to bottom, #f59e0b, #d97706); border-top: 1px solid #fbbf24; }
+        .btn-purple { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); border-top: 1px solid #a78bfa; }
         .btn:active { transform: translateY(1px); filter: brightness(0.9); }
 
         /* UTILS */
@@ -195,11 +196,24 @@
                 </div>
             </div>
 
-            <!-- 5. NEWS VIEW (In Menu) -->
-            <div id="view-news" class="hidden p-4 space-y-4 pb-20">
-                <h2 class="text-white font-bold text-lg mb-4">World Events</h2>
-                <div id="news-feed" class="space-y-3 font-mono text-xs"></div>
-                <button id="logout-btn" class="w-full btn-red p-3 rounded mt-8 font-bold text-white">LOGOUT</button>
+            <!-- 5. GLOBAL / LEADERBOARD VIEW -->
+            <div id="view-global" class="hidden p-4 space-y-6 pb-20">
+                
+                <!-- Leaderboard Section -->
+                <div>
+                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2"><i data-lucide="trophy" class="text-yellow-500"></i> World Rankings</h2>
+                    <div id="leaderboard-list" class="space-y-2">
+                        <div class="text-center text-slate-500 py-4">Loading Rankings...</div>
+                    </div>
+                </div>
+
+                <!-- News Feed Section -->
+                <div>
+                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2"><i data-lucide="newspaper"></i> News Feed</h2>
+                    <div id="news-feed" class="space-y-3 font-mono text-xs max-h-60 overflow-y-auto"></div>
+                </div>
+
+                <button id="logout-btn" class="w-full btn-red p-3 rounded font-bold text-white mt-4">LOGOUT</button>
             </div>
 
         </main>
@@ -210,7 +224,8 @@
             <button onclick="switchView('war')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="sword" size="20"></i>War</button>
             <button onclick="switchView('market')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="bar-chart-3" size="20"></i>Market</button>
             <button onclick="switchView('alliance')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="shield" size="20"></i>Alliance</button>
-            <button onclick="switchView('news')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="newspaper" size="20"></i>News</button>
+            <!-- NEW GLOBAL BUTTON -->
+            <button onclick="switchView('global')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="globe" size="20"></i>Global</button>
         </nav>
 
         <!-- MODALS -->
@@ -279,7 +294,7 @@
         const db = getFirestore(app);
 
         // --- GAME DATA ---
-        const MAX_SLOTS = 30; // Building cap per city
+        const MAX_SLOTS = 20; // Building cap per city
         const UNIT_STATS = {
             soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
             tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
@@ -636,39 +651,71 @@
             toast("Deposited", 'success');
         };
 
-        // --- NEWS ---
+        // --- GLOBAL & NEWS ---
         async function loadNews() {
-            const list = el('news-feed');
-            const snaps = await getDocs(query(collection(db, "events"), orderBy("timestamp", "desc"), limit(10)));
-            list.innerHTML = '';
-            snaps.forEach(d => {
+            // Load Events
+            const newsList = el('news-feed');
+            const newsSnaps = await getDocs(query(collection(db, "events"), orderBy("timestamp", "desc"), limit(10)));
+            newsList.innerHTML = '';
+            newsSnaps.forEach(d => {
                 const e = d.data();
                 const div = document.createElement('div');
-                div.className = 'text-slate-300 border-b border-slate-800 pb-1';
-                div.innerHTML = `<span class="text-slate-500">[${e.timestamp?.toDate().toLocaleTimeString()||'Now'}]</span> ${e.text}`;
-                list.appendChild(div);
+                div.className = 'text-slate-300 border-b border-slate-800 pb-1 flex gap-2';
+                div.innerHTML = `<span class="text-slate-500 font-mono text-[10px] whitespace-nowrap">${e.timestamp?.toDate().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})||'Now'}</span> <span>${e.text}</span>`;
+                newsList.appendChild(div);
             });
         }
+
+        async function loadLeaderboard() {
+            const list = el('leaderboard-list'); 
+            list.innerHTML = '<div class="text-center text-slate-500 text-xs">Loading ranks...</div>';
+            
+            // Query top 20 by population
+            const snaps = await getDocs(query(collection(db, "nations"), orderBy("stats.population", "desc"), limit(20)));
+            
+            list.innerHTML = '';
+            let rank = 1;
+            snaps.forEach(d => {
+                const n = d.data();
+                const isMe = d.id === user.uid;
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3 rounded ${isMe ? 'bg-blue-900/40 border border-blue-500' : 'bg-slate-800 border border-slate-700'}`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="text-lg font-black text-slate-500 w-6">#${rank++}</div>
+                        <img src="${n.flag}" class="w-8 h-5 object-cover rounded shadow">
+                        <div>
+                            <div class="font-bold text-white text-sm">${n.name}</div>
+                            <div class="text-[10px] text-slate-400">${n.leader}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-white text-sm">${fmt(n.stats.population)}</div>
+                        <div class="text-[9px] text-slate-500 uppercase">Citizens</div>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
         async function logEvent(text) {
             await addDoc(collection(db, "events"), { text, timestamp: serverTimestamp() });
         }
 
-        // --- OFFLINE CALCULATION (Advanced) ---
+        // --- OFFLINE CALCULATION ---
         async function calcOffline() {
             const now = new Date();
             const last = nation.lastCollection?.toDate() || now;
             const mins = Math.min(Math.floor((now - last) / 60000), 1440); // Cap at 24h
 
             if (mins > 1) {
-                // 1. Fetch cities
                 const citiesQ = query(collection(db, "cities"), where("nationId", "==", user.uid));
                 const snaps = await getDocs(citiesQ);
 
-                // 2. Calc Production rates
                 let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
                 snaps.forEach(d => {
                     const b = d.data().buildings;
-                    if(b.house)       prod.money     += b.house * 25;
+                    if(b.house)       prod.money     += b.house * 25 + ((b.house/2)/2);
                     if(b.farm)        prod.food      += b.farm * 1;
                     if(b.steelMill)   prod.steel     += b.steelMill * 0.5;
                     if(b.bauxiteMine) prod.aluminum  += b.bauxiteMine * 0.5;
@@ -676,7 +723,6 @@
                     if(b.ammoFactory) prod.munitions += b.ammoFactory * 0.5;
                 });
 
-                // 3. Apply
                 const updates = { lastCollection: serverTimestamp() };
                 let msg = "";
                 for(let r in prod) {
@@ -724,14 +770,14 @@
 
         // Navigation
         window.switchView = (v) => {
-            ['dashboard','war','market','alliance','news'].forEach(id => el('view-'+id).classList.add('hidden'));
+            ['dashboard','war','market','alliance','global'].forEach(id => el('view-'+id).classList.add('hidden'));
             el('view-'+v).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('text-blue-500'));
             event.currentTarget.classList.add('text-blue-500');
             if(v=='war') loadWar();
             if(v=='market') loadMarket();
             if(v=='alliance') loadAlliance();
-            if(v=='news') loadNews();
+            if(v=='global') { loadNews(); loadLeaderboard(); }
         };
 
     </script>
