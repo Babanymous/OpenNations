@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OpenNations</title>
+    
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1f2937">
+    <link rel="apple-touch-icon" href="https://lucide.dev/icon.svg">
+    
+    <!-- Tailwind CSS (Styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Scrollbar & Game Feel */
+        body { background-color: #111827; color: #e5e7eb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .game-card { background: #1f2937; border: 1px solid #374151; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
+        .btn-primary { background: #2563eb; transition: all 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
+        .btn-danger { background: #dc2626; transition: all 0.2s; }
+        .btn-danger:active { transform: scale(0.95); }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        
+        /* Toast Animation */
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast { animation: slideIn 0.3s ease-out; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col">
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast-container" class="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
+        <!-- Toasts injected here -->
+    </div>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 z-40 bg-gray-900 flex flex-col items-center justify-center">
+        <div class="animate-spin text-blue-500 mb-4">
+            <i data-lucide="loader-2" width="48" height="48"></i>
+        </div>
+        <h2 class="text-xl font-bold tracking-wider">CONNECTING TO SATELLITE...</h2>
+    </div>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="hidden fixed inset-0 z-30 bg-gray-900 flex flex-col items-center justify-center p-6">
+        <h1 class="text-4xl font-black text-blue-500 mb-2">OPEN NATIONS</h1>
+        <p class="text-gray-400 mb-8 text-center">Build your empire. Conquer the world.</p>
+        <button id="login-btn" class="btn-primary w-full max-w-xs py-4 rounded-lg font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+            <i data-lucide="log-in"></i> Sign in with Google
+        </button>
+    </div>
+
+    <!-- CREATE NATION SCREEN -->
+    <div id="create-screen" class="hidden fixed inset-0 z-30 bg-gray-900 flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-md space-y-4">
+            <h2 class="text-2xl font-bold text-center">Found Your Nation</h2>
+            <div>
+                <label class="block text-sm font-medium text-gray-400">Nation Name</label>
+                <input type="text" id="new-nation-name" class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white focus:border-blue-500 outline-none" placeholder="e.g. Republic of Dave">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-400">Flag URL (Image)</label>
+                <input type="text" id="new-nation-flag" class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white focus:border-blue-500 outline-none" placeholder="https://...">
+            </div>
+            <button id="create-nation-btn" class="btn-primary w-full py-3 rounded font-bold mt-4">Establish Nation</button>
+        </div>
+    </div>
+
+    <!-- MAIN GAME INTERFACE -->
+    <div id="game-ui" class="hidden flex-1 flex flex-col h-full relative">
+        
+        <!-- Top Bar: Resources -->
+        <header class="bg-gray-800 border-b border-gray-700 p-2 flex justify-between items-center shadow-md z-10">
+            <div class="flex items-center gap-2">
+                <img id="nav-flag" src="" class="w-8 h-6 object-cover border border-gray-600 rounded-sm bg-gray-700">
+                <div>
+                    <div id="nav-nation-name" class="font-bold text-sm leading-tight">Loading...</div>
+                    <div class="text-xs text-green-400">Online</div>
+                </div>
+            </div>
+            <div class="flex gap-3 text-sm font-mono">
+                <div class="flex flex-col items-end">
+                    <span class="text-yellow-500 font-bold flex items-center gap-1"><i data-lucide="coins" size="14"></i> <span id="res-money">0</span></span>
+                </div>
+                <div class="flex flex-col items-end">
+                    <span class="text-gray-400 font-bold flex items-center gap-1"><i data-lucide="anvil" size="14"></i> <span id="res-steel">0</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 space-y-6 pb-24" id="main-content">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="space-y-4">
+                <!-- Military Summary -->
+                <div class="game-card p-4 rounded-lg">
+                    <h3 class="text-gray-400 text-xs uppercase font-bold mb-2">Military Strength</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 p-2 rounded flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Soldiers</span>
+                            <span id="mil-soldiers" class="font-bold text-red-400">0</span>
+                        </div>
+                        <div class="bg-gray-800 p-2 rounded flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Tanks</span>
+                            <span id="mil-tanks" class="font-bold text-red-400">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cities List -->
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <h3 class="text-gray-400 text-xs uppercase font-bold">Territories</h3>
+                        <button id="found-city-btn" class="text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-white font-bold shadow transition">+ Found City ($5k)</button>
+                    </div>
+                    <div id="cities-list" class="space-y-3">
+                        <!-- City Cards injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- War Room View -->
+            <div id="view-war" class="hidden space-y-4">
+                <h3 class="text-red-500 font-bold text-lg border-b border-gray-700 pb-2">Global Conflicts</h3>
+                <div id="enemy-list" class="space-y-3">
+                    <!-- Enemy Cards injected via JS -->
+                    <div class="text-center text-gray-500 py-8">Scanning for targets...</div>
+                </div>
+            </div>
+
+             <!-- Settings View -->
+             <div id="view-settings" class="hidden space-y-4">
+                <h3 class="text-white font-bold text-lg border-b border-gray-700 pb-2">Settings</h3>
+                <div class="game-card p-4 rounded-lg">
+                    <p class="text-sm text-gray-400 mb-4">User ID: <span id="settings-uid" class="font-mono text-xs">...</span></p>
+                    <button id="logout-btn" class="btn-danger w-full py-2 rounded font-bold">Log Out</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bg-gray-900 border-t border-gray-800 flex justify-around p-2 pb-safe">
+            <button onclick="switchView('dashboard')" class="nav-btn flex flex-col items-center gap-1 p-2 text-blue-500 w-1/3">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="text-[10px] font-bold">Empire</span>
+            </button>
+            <button onclick="switchView('war')" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-500 w-1/3">
+                <i data-lucide="sword"></i>
+                <span class="text-[10px] font-bold">War</span>
+            </button>
+            <button onclick="switchView('settings')" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-500 w-1/3">
+                <i data-lucide="settings"></i>
+                <span class="text-[10px] font-bold">Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- LOGIC SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- CONFIGURATION ---
+        // 1. Create a Firebase Project
+        // 2. Enable Auth (Google) and Firestore (Database)
+        // 3. Paste your config object below:
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        // --- INIT ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // State
+        let currentUser = null;
+        let currentNation = null;
+        let resourceLoop = null;
+
+        // UI Helpers
+        const show = (id) => document.getElementById(id).classList.remove('hidden');
+        const hide = (id) => document.getElementById(id).classList.add('hidden');
+        const toast = (msg, type='info') => {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const bg = type === 'error' ? 'bg-red-600' : (type === 'success' ? 'bg-green-600' : 'bg-blue-600');
+            el.className = `toast pointer-events-auto mt-2 px-4 py-2 rounded shadow-lg text-white text-sm font-bold ${bg}`;
+            el.innerText = msg;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        };
+
+        // --- AUTH FLOW ---
+        onAuthStateChanged(auth, async (user) => {
+            hide('loading-screen');
+            if (user) {
+                currentUser = user;
+                hide('auth-screen');
+                await loadGame();
+            } else {
+                show('auth-screen');
+                hide('game-ui');
+                hide('create-screen');
+            }
+        });
+
+        document.getElementById('login-btn').onclick = () => {
+            signInWithPopup(auth, new GoogleAuthProvider()).catch(e => toast(e.message, 'error'));
+        };
+
+        document.getElementById('logout-btn').onclick = () => {
+            signOut(auth);
+            location.reload();
+        };
+
+        // --- GAME LOAD ---
+        async function loadGame() {
+            show('loading-screen');
+            const nationRef = doc(db, "nations", currentUser.uid);
+            const snap = await getDoc(nationRef);
+
+            if (snap.exists()) {
+                currentNation = snap.data();
+                await calculateOfflineResources(nationRef, currentNation);
+                initGameUI();
+            } else {
+                hide('loading-screen');
+                show('create-screen');
+            }
+        }
+
+        // --- NATION CREATION ---
+        document.getElementById('create-nation-btn').onclick = async () => {
+            const name = document.getElementById('new-nation-name').value;
+            const flag = document.getElementById('new-nation-flag').value || 'https://lucide.dev/icon.svg'; // Fallback
+            
+            if(!name) return toast("Name required", 'error');
+
+            show('loading-screen');
+            try {
+                await setDoc(doc(db, "nations", currentUser.uid), {
+                    name, 
+                    flag,
+                    ownerId: currentUser.uid,
+                    resources: { money: 10000, steel: 500 },
+                    military: { soldiers: 10, tanks: 0 },
+                    lastCollection: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                // Create Capital City
+                await addDoc(collection(db, "cities"), {
+                    nationId: currentUser.uid,
+                    name: "Capital " + name,
+                    infra: { houses: 5, steelMills: 1, barracks: 1 }
+                });
+                location.reload();
+            } catch (e) {
+                toast(e.message, 'error');
+                hide('loading-screen');
+            }
+        };
+
+        // --- OFFLINE CALCULATIONS (The "Engine") ---
+        async function calculateOfflineResources(ref, data) {
+            // Simple logic: 1 money per minute per house (assuming abstract houses for now)
+            // In a real app, we'd query all cities to get total production rate.
+            // Here we assume base production for simplicity.
+            
+            const now = new Date();
+            const last = data.lastCollection?.toDate() || now;
+            const diffMinutes = (now - last) / 60000;
+
+            if (diffMinutes > 1) {
+                // Base Production Rates
+                const moneyRate = 100; // per minute
+                const steelRate = 5;
+
+                const gainedMoney = Math.floor(diffMinutes * moneyRate);
+                const gainedSteel = Math.floor(diffMinutes * steelRate);
+
+                await updateDoc(ref, {
+                    "resources.money": increment(gainedMoney),
+                    "resources.steel": increment(gainedSteel),
+                    lastCollection: serverTimestamp()
+                });
+                
+                // Update local state for immediate UI
+                currentNation.resources.money += gainedMoney;
+                currentNation.resources.steel += gainedSteel;
+                toast(`While you were gone: +$${gainedMoney}, +${gainedSteel} Steel`);
+            }
+        }
+
+        // --- MAIN UI RENDER ---
+        function initGameUI() {
+            hide('loading-screen');
+            hide('create-screen');
+            show('game-ui');
+            lucide.createIcons();
+
+            // Header
+            document.getElementById('nav-nation-name').innerText = currentNation.name;
+            document.getElementById('nav-flag').src = currentNation.flag;
+            document.getElementById('settings-uid').innerText = currentUser.uid;
+
+            // Resource Render Loop
+            renderResources();
+            loadCities();
+            
+            // Start local tick (just for visual responsiveness)
+            clearInterval(resourceLoop);
+            resourceLoop = setInterval(() => {
+                // In a real robust app, we don't just increment locally without server checks,
+                // but for a smooth UI, we visualy increment.
+                // We will rely on DB interactions to "realize" gains.
+            }, 10000);
+        }
+
+        function renderResources() {
+            document.getElementById('res-money').innerText = currentNation.resources.money.toLocaleString();
+            document.getElementById('res-steel').innerText = currentNation.resources.steel.toLocaleString();
+            document.getElementById('mil-soldiers').innerText = currentNation.military.soldiers.toLocaleString();
+            document.getElementById('mil-tanks').innerText = currentNation.military.tanks.toLocaleString();
+        }
+
+        // --- CITIES & BUILDING ---
+        async function loadCities() {
+            const list = document.getElementById('cities-list');
+            list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
+            
+            const q = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
+            const snaps = await getDocs(q);
+            
+            list.innerHTML = '';
+            snaps.forEach(docSnap => {
+                const city = docSnap.data();
+                const cid = docSnap.id;
+                
+                const el = document.createElement('div');
+                el.className = 'game-card p-3 rounded flex flex-col gap-2';
+                el.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                        <span class="font-bold text-blue-400">${city.name}</span>
+                        <span class="text-xs text-gray-500 bg-gray-900 px-2 py-1 rounded">ID: ${cid.slice(0,4)}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs text-center">
+                        <div class="bg-gray-800 p-1 rounded">
+                            <div class="text-gray-500">Houses</div>
+                            <div class="font-bold text-lg">${city.infra.houses || 0}</div>
+                        </div>
+                        <div class="bg-gray-800 p-1 rounded">
+                            <div class="text-gray-500">Steel Mills</div>
+                            <div class="font-bold text-lg">${city.infra.steelMills || 0}</div>
+                        </div>
+                        <div class="bg-gray-800 p-1 rounded">
+                            <div class="text-gray-500">Barracks</div>
+                            <div class="font-bold text-lg">${city.infra.barracks || 0}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <button class="btn-primary flex-1 py-2 rounded text-xs font-bold" onclick="window.build('${cid}', 'steelMills', 500)">
+                            + Mill ($500)
+                        </button>
+                        <button class="btn-danger flex-1 py-2 rounded text-xs font-bold" onclick="window.recruit('${cid}', 100)">
+                            + Soldier ($100)
+                        </button>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
+        // --- ACTIONS ---
+        window.build = async (cityId, type, cost) => {
+            if (currentNation.resources.money < cost) return toast("Not enough money!", 'error');
+
+            try {
+                // Deduct money
+                await updateDoc(doc(db, "nations", currentUser.uid), {
+                    "resources.money": increment(-cost)
+                });
+                
+                // Add Building
+                const updateObj = {};
+                updateObj[`infra.${type}`] = increment(1);
+                await updateDoc(doc(db, "cities", cityId), updateObj);
+
+                currentNation.resources.money -= cost;
+                renderResources();
+                loadCities(); // Reload UI
+                toast("Construction Complete!", 'success');
+            } catch(e) { toast(e.message, 'error'); }
+        };
+
+        window.recruit = async (cityId, cost) => {
+             if (currentNation.resources.money < cost) return toast("Not enough money!", 'error');
+             try {
+                await updateDoc(doc(db, "nations", currentUser.uid), {
+                    "resources.money": increment(-cost),
+                    "military.soldiers": increment(10)
+                });
+                currentNation.resources.money -= cost;
+                currentNation.military.soldiers += 10;
+                renderResources();
+                toast("Recruited 10 Soldiers", 'success');
+             } catch(e) { toast(e.message, 'error'); }
+        };
+
+        document.getElementById('found-city-btn').onclick = async () => {
+            const cost = 5000;
+            if (currentNation.resources.money < cost) return toast("Need $5,000 to found city", 'error');
+
+            const name = prompt("Name your new city:");
+            if(!name) return;
+
+            try {
+                await updateDoc(doc(db, "nations", currentUser.uid), {
+                    "resources.money": increment(-cost)
+                });
+                await addDoc(collection(db, "cities"), {
+                    nationId: currentUser.uid,
+                    name: name,
+                    infra: { houses: 1, steelMills: 0, barracks: 0 }
+                });
+                currentNation.resources.money -= cost;
+                renderResources();
+                loadCities();
+                toast("City Founded!", 'success');
+            } catch(e) { toast(e.message, 'error'); }
+        };
+
+        // --- WAR ROOM ---
+        async function loadEnemies() {
+            const list = document.getElementById('enemy-list');
+            list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
+            
+            // Get 5 random nations (limitation: Firestore random is hard, we just get recent ones excluding self)
+            const q = query(collection(db, "nations"), limit(10)); 
+            const snaps = await getDocs(q);
+
+            list.innerHTML = '';
+            snaps.forEach(docSnap => {
+                if (docSnap.id === currentUser.uid) return; // Don't show self
+                
+                const enemy = docSnap.data();
+                const enemyId = docSnap.id;
+
+                const el = document.createElement('div');
+                el.className = 'game-card p-3 rounded flex justify-between items-center';
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${enemy.flag}" class="w-10 h-10 rounded bg-black object-cover">
+                        <div>
+                            <div class="font-bold text-white">${enemy.name}</div>
+                            <div class="text-xs text-gray-400">Soldiers: ~${enemy.military?.soldiers || 0}</div>
+                        </div>
+                    </div>
+                    <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold text-xs" 
+                        onclick="window.attack('${enemyId}', '${enemy.name}')">
+                        ATTACK
+                    </button>
+                `;
+                list.appendChild(el);
+            });
+            if(list.innerHTML === '') list.innerHTML = '<div class="text-gray-500 text-center">No other nations found.</div>';
+        }
+
+        window.attack = async (targetId, targetName) => {
+            if(!confirm(`Declare war on ${targetName}?`)) return;
+
+            // Attack Logic (Client side for demo - risky in real prod)
+            try {
+                show('loading-screen');
+                await runTransaction(db, async (transaction) => {
+                    const myRef = doc(db, "nations", currentUser.uid);
+                    const enemyRef = doc(db, "nations", targetId);
+
+                    const myDoc = await transaction.get(myRef);
+                    const enemyDoc = await transaction.get(enemyRef);
+
+                    if (!enemyDoc.exists()) throw "Enemy does not exist!";
+
+                    const mySoldiers = myDoc.data().military.soldiers;
+                    const enemySoldiers = enemyDoc.data().military.soldiers;
+
+                    // Simple Combat Math
+                    if (mySoldiers > enemySoldiers) {
+                        // Win
+                        const loot = Math.floor(enemyDoc.data().resources.money * 0.1); // Steal 10%
+                        transaction.update(enemyRef, { 
+                            "resources.money": increment(-loot),
+                            "military.soldiers": Math.floor(enemySoldiers * 0.5) // Kill 50%
+                        });
+                        transaction.update(myRef, {
+                            "resources.money": increment(loot),
+                            "military.soldiers": Math.floor(mySoldiers * 0.9) // Lose 10%
+                        });
+                        return { win: true, loot };
+                    } else {
+                        // Lose
+                        transaction.update(myRef, { "military.soldiers": Math.floor(mySoldiers * 0.5) });
+                        return { win: false };
+                    }
+                }).then((result) => {
+                    hide('loading-screen');
+                    if(result.win) {
+                        toast(`VICTORY! Looted $${result.loot}`, 'success');
+                        currentNation.resources.money += result.loot; // Optimistic update
+                    } else {
+                        toast("DEFEAT! Army retreated.", 'error');
+                    }
+                    renderResources();
+                });
+            } catch (e) {
+                hide('loading-screen');
+                toast("Attack failed: " + e, 'error');
+            }
+        };
+
+        // --- NAVIGATION ---
+        window.switchView = (viewName) => {
+            ['dashboard', 'war', 'settings'].forEach(v => hide('view-'+v));
+            show('view-'+viewName);
+            
+            // Update Tab Colors
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-blue-500', 'text-gray-500'));
+            event.currentTarget.classList.replace('text-gray-500', 'text-blue-500');
+
+            if(viewName === 'war') loadEnemies();
+        };
+
+    </script>
+</body>
+</html>
+
