@@ -377,14 +377,44 @@
         }
         window.build = async (cid, type) => {
             const cost = BUILDING_STATS[type].cost;
+            
+            // 1. Check if user has enough money
             if(nation.resources.money < cost) return toast(`Need $${fmt(cost)}`, 'error');
+        
             try {
-                nation.resources.money -= cost; renderResources();
-                await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(-cost) });
+                // 2. Deduct Money locally
+                nation.resources.money -= cost; 
+                
+                // Prepare database updates
+                const nationUpdates = { "resources.money": increment(-cost) };
+        
+                // --- NEW LOGIC: POPULATION GROWTH ---
+                // If the building is "Housing", increase population by 100
+                if(type === 'house') {
+                    const popGain = 100; // 1 House = 100 People
+                    nationUpdates["stats.population"] = increment(popGain);
+                    
+                    // Update local screen immediately
+                    nation.stats.population = (nation.stats.population || 0) + popGain;
+                    el('dash-pop').innerText = fmt(nation.stats.population);
+                }
+                // ------------------------------------
+        
+                // 3. Send updates to Firebase
+                await updateDoc(doc(db, "nations", user.uid), nationUpdates);
                 await updateDoc(doc(db, "cities", cid), { [`buildings.${type}`]: increment(1) });
-                loadCities(); toast("Constructed!", 'success');
-            } catch(e){ toast("Error", 'error'); }
+        
+                // 4. Refresh UI
+                renderResources();
+                loadCities(); 
+                toast(`Constructed ${BUILDING_STATS[type].name}`, 'success');
+        
+            } catch(e){ 
+                console.error(e); // Log error to console for debugging
+                toast("Build failed. Check connection.", 'error'); 
+            }
         };
+
         el('found-city-btn').onclick = async () => {
             if(nation.resources.money < 50000) return toast("Need $50k", 'error');
             const n = prompt("City Name:"); if(!n) return;
