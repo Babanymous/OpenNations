@@ -24,6 +24,7 @@
         .btn-red { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
         .btn-green { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
         .btn-amber { background: linear-gradient(to bottom, #f59e0b, #d97706); border-top: 1px solid #fbbf24; }
+        .btn-purple { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); border-top: 1px solid #a78bfa; }
         .btn:active { transform: translateY(1px); filter: brightness(0.9); }
 
         /* UTILS */
@@ -179,7 +180,7 @@
             </div>
 
             <!-- 4. ALLIANCE VIEW -->
-            <div id="view-alliance" class="hidden p-4 space-y-4 pb-20">
+            <div id="view-alliance" class="hidden p-4 space-y-6 pb-20">
                 <!-- If No Alliance -->
                 <div id="no-alliance-ui" class="text-center space-y-4 mt-10">
                     <i data-lucide="shield-alert" class="mx-auto text-slate-600" size="64"></i>
@@ -191,14 +192,34 @@
                     <div id="join-alliance-list" class="text-left space-y-2 mt-4"></div>
                 </div>
                 <!-- If In Alliance -->
-                <div id="alliance-ui" class="hidden space-y-4">
-                    <div class="bg-blue-900/30 border border-blue-500/30 p-4 rounded-xl text-center">
-                        <h2 id="alliance-name-display" class="text-2xl font-black text-blue-400">ALLIANCE</h2>
-                        <div class="text-xs text-blue-200/60 mt-1">Bank Balance: <span class="font-mono text-white" id="alliance-bank">$0</span></div>
-                        <button onclick="depositToBank()" class="mt-2 text-[10px] bg-blue-600 px-2 py-1 rounded text-white">Deposit $10k</button>
+                <div id="alliance-ui" class="hidden space-y-6">
+                    
+                    <!-- Bank Card -->
+                    <div class="bg-blue-900/30 border border-blue-500/30 p-4 rounded-xl text-center relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h2 id="alliance-name-display" class="text-2xl font-black text-blue-400">ALLIANCE</h2>
+                            <div class="text-xs text-blue-200/60 mt-1">Bank Balance</div>
+                            <div class="font-mono text-3xl text-white font-bold mb-2" id="alliance-bank">$0</div>
+                            <button onclick="depositToBank()" class="text-xs bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white font-bold shadow-lg transition">
+                                <i data-lucide="coins" class="inline w-3 h-3 mr-1"></i> Deposit $10k
+                            </button>
+                            <p class="text-[10px] text-blue-300 mt-2 italic">Funds are used by the leader to buy projects that boost everyone.</p>
+                        </div>
                     </div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase">Members</h3>
-                    <div id="alliance-members-list" class="space-y-2"></div>
+
+                    <!-- Projects Section -->
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2"><i data-lucide="hammer"></i> Projects (Global Buffs)</h3>
+                        <div id="alliance-projects-list" class="space-y-2">
+                            <!-- Projects injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Members Section -->
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Members</h3>
+                        <div id="alliance-members-list" class="space-y-2"></div>
+                    </div>
                 </div>
             </div>
 
@@ -239,6 +260,9 @@
             <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700 modal-animate">
                 <h3 class="text-lg font-bold text-white mb-2">Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
                 <div id="recruit-cost-display" class="text-xs text-slate-400 mb-4 font-mono"></div>
+                <!-- DISCOUNT DISPLAY -->
+                <div id="recruit-discount-msg" class="hidden text-xs text-green-400 font-bold mb-2">✅ 20% Military Academy Discount Applied</div>
+                
                 <div class="flex gap-2">
                     <input type="number" id="recruit-amount" value="10" class="bg-slate-900 border border-slate-600 rounded w-20 text-center text-white p-2">
                     <button id="confirm-recruit-btn" class="flex-1 btn-blue rounded font-bold text-white text-sm">BUY</button>
@@ -285,13 +309,12 @@
 
         // --- CONFIG ---
         const firebaseConfig = {
-            apiKey: "AIzaSyBHqPKczjs451HSI9NnRDKM7hXtWOwu0f4",
-            authDomain: "opennations-b73bd.firebaseapp.com",
-            projectId: "opennations-b73bd",
-            storageBucket: "opennations-b73bd.firebasestorage.app",
-            messagingSenderId: "45297560412",
-            appId: "1:45297560412:web:1ebee9783a042322402f99",
-            measurementId: "G-3R641VW9RM"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "123",
+            appId: "1:123:web:123"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -301,7 +324,7 @@
         // --- GAME DATA ---
         const GLOBAL_COOLDOWN_MS = 3 * 60 * 60 * 1000; // 3 Hours
         const TARGET_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 Hours
-        const MAX_SLOTS = 30; 
+        const BASE_MAX_SLOTS = 30; 
         const UNIT_STATS = {
             soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
             tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
@@ -313,6 +336,15 @@
             farm: { name: "Farm", cost: 1000 }, steelMill: { name: "Steel Mill", cost: 2500 },
             bauxiteMine: { name: "Bax. Mine", cost: 3000 }, refinery: { name: "Refinery", cost: 3500 },
             ammoFactory: { name: "Ammo Fac.", cost: 5000 }, house: { name: "Housing", cost: 500 }
+        };
+        // NEW: Alliance Projects
+        const ALLIANCE_PROJECTS = {
+            wall_street: { name: "Wall Street", cost: 200000, desc: "+20% Money Gen" },
+            iron_dome: { name: "Iron Dome", cost: 500000, desc: "+15% Defense" },
+            industrial_act: { name: "Industrial Act", cost: 300000, desc: "+20% Resource Prod" },
+            green_rev: { name: "Green Revolution", cost: 400000, desc: "+50% Food Prod" },
+            mil_academy: { name: "Military Academy", cost: 750000, desc: "-20% Unit Cost" },
+            urban_plan: { name: "Urban Planning", cost: 1000000, desc: "+5 City Slots" }
         };
 
         let user = null, nation = null, alliance = null, uploadedFlag = null, recruitType = null;
@@ -354,8 +386,8 @@
             const snap = await getDoc(doc(db, "nations", user.uid));
             if(snap.exists()) {
                 nation = snap.data();
-                await calcOffline(); // Advanced resource calc
-                await loadAlliance();
+                await loadAlliance(); // Load alliance FIRST for buffs
+                await calcOffline(); 
                 initUI();
             } else {
                 el('loading-screen').classList.add('hidden');
@@ -386,14 +418,23 @@
         }
 
         // --- CITIES & BUILDING ---
+        function getMaxSlots() {
+            let slots = BASE_MAX_SLOTS;
+            if (alliance?.projects?.urban_plan) slots += 5;
+            return slots;
+        }
+
         async function loadCities() {
             const list = el('cities-list'); list.innerHTML = '';
             const snaps = await getDocs(query(collection(db, "cities"), where("nationId", "==", user.uid)));
+            
+            const currentMax = getMaxSlots();
+
             snaps.forEach(d => {
                 const c = d.data();
                 let totalBuildings = 0;
                 for(let k in c.buildings) totalBuildings += c.buildings[k];
-                const isFull = totalBuildings >= MAX_SLOTS;
+                const isFull = totalBuildings >= currentMax;
                 const slotColor = isFull ? 'text-red-500' : 'text-emerald-500';
 
                 let bHtml = '';
@@ -409,7 +450,7 @@
                 div.innerHTML = `
                     <div class="flex justify-between items-center border-b border-slate-700 pb-1">
                         <div class="font-bold text-white text-sm">${c.name}</div>
-                        <div class="text-[10px] font-mono ${slotColor}">SLOTS: ${totalBuildings}/${MAX_SLOTS}</div>
+                        <div class="text-[10px] font-mono ${slotColor}">SLOTS: ${totalBuildings}/${currentMax}</div>
                     </div>
                     <div class="grid grid-cols-3 gap-1">${bHtml}</div>`;
                 list.appendChild(div);
@@ -417,7 +458,8 @@
         }
 
         window.build = async (cid, type, currentCount) => {
-            if (currentCount >= MAX_SLOTS) return toast("City is FULL! Found a new city.", 'error');
+            const currentMax = getMaxSlots();
+            if (currentCount >= currentMax) return toast("City is FULL! Found a new city.", 'error');
             
             const cost = BUILDING_STATS[type].cost;
             if(nation.resources.money < cost) return toast(`Need $${fmt(cost)}`, 'error');
@@ -426,7 +468,6 @@
                 nation.resources.money -= cost; 
                 const nationUpdates = { "resources.money": increment(-cost) };
 
-                // POPULATION GROWTH
                 if(type === 'house') {
                     const popGain = 100;
                     nationUpdates["stats.population"] = increment(popGain);
@@ -448,7 +489,7 @@
             const n = prompt("City Name:"); if(!n) return;
             
             nation.resources.money -= 50000; 
-            nation.stats.population = (nation.stats.population || 0) + 1000; // Capital starts with pop
+            nation.stats.population = (nation.stats.population || 0) + 1000; 
             renderResources();
             el('dash-pop').innerText = fmt(nation.stats.population);
 
@@ -456,7 +497,6 @@
                 "resources.money": increment(-50000),
                 "stats.population": increment(1000) 
             });
-            // New city gets pre-built buildings (approx 14 slots used)
             await addDoc(collection(db, "cities"), { 
                 nationId: user.uid, name: n, 
                 buildings: {house:10, farm:2, steelMill:1, bauxiteMine:0, refinery:0, ammoFactory:1}
@@ -469,25 +509,38 @@
             recruitType = type; el('recruit-type-name').innerText = type;
             let txt = ''; for(let k in UNIT_STATS[type].cost) txt += `${k}: ${UNIT_STATS[type].cost[k]}  `;
             el('recruit-cost-display').innerText = txt;
+            
+            // Show discount status
+            if(alliance?.projects?.mil_academy) el('recruit-discount-msg').classList.remove('hidden');
+            else el('recruit-discount-msg').classList.add('hidden');
+
             el('recruit-modal').classList.remove('hidden');
         };
+
         el('confirm-recruit-btn').onclick = async () => {
             const amt = parseInt(el('recruit-amount').value);
             const unit = UNIT_STATS[recruitType];
+            
+            // Apply Discount?
+            let discount = 1.0;
+            if(alliance?.projects?.mil_academy) discount = 0.8; // 20% off
+
             const updates = {};
             for(let r in unit.cost) {
-                if(nation.resources[r] < unit.cost[r]*amt) return toast(`Need more ${r}`, 'error');
-                updates[`resources.${r}`] = increment(-(unit.cost[r]*amt));
+                const totalCost = Math.floor((unit.cost[r] * amt) * discount);
+                if(nation.resources[r] < totalCost) return toast(`Need more ${r}`, 'error');
+                updates[`resources.${r}`] = increment(-totalCost);
+                nation.resources[r] -= totalCost; // Local update
             }
             updates[`military.${recruitType}`] = increment(amt);
             await updateDoc(doc(db, "nations", user.uid), updates);
-            for(let r in unit.cost) nation.resources[r] -= (unit.cost[r]*amt);
+            
             nation.military[recruitType] = (nation.military[recruitType]||0) + amt;
             if(recruitType === 'spies') el('mil-spies').innerText = nation.military.spies;
             renderResources(); closeModals(); toast(`Recruited ${amt} ${recruitType}`, 'success');
         };
 
-        // --- WAR & SEARCH ---
+        // --- WAR ---
         async function loadWar(searchTerm = null) {
             const list = el('enemy-list'); 
             list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
@@ -565,7 +618,6 @@
             el('report-modal').classList.remove('hidden');
         };
 
-        // --- ATTACK WITH COOLDOWNS ---
         window.attack = async (tid) => {
             if(!confirm("Declare WAR?")) return;
             el('loading-screen').classList.remove('hidden');
@@ -576,15 +628,12 @@
                     const meSnap = await t.get(myRef);
                     const me = meSnap.data();
                     
-                    // 1. CHECK GLOBAL COOLDOWN
                     const now = Date.now();
                     const lastGlobal = me.lastAttack?.toMillis() || 0;
                     if (now - lastGlobal < GLOBAL_COOLDOWN_MS) {
                         const remaining = Math.ceil((GLOBAL_COOLDOWN_MS - (now - lastGlobal)) / 60000);
                         throw `Army exhausted! Wait ${Math.floor(remaining/60)}h ${remaining%60}m.`;
                     }
-
-                    // 2. CHECK TARGET SPECIFIC COOLDOWN
                     const lastTarget = me.attackHistory?.[tid]?.toMillis() || 0;
                     if (now - lastTarget < TARGET_COOLDOWN_MS) {
                         const remaining = Math.ceil((TARGET_COOLDOWN_MS - (now - lastTarget)) / 60000);
@@ -613,7 +662,7 @@
                     } else {
                         t.update(myRef, { 
                             "military.soldiers": Math.floor(me.military.soldiers*0.8),
-                            lastAttack: serverTimestamp(), // Cooldown applies even on defeat
+                            lastAttack: serverTimestamp(),
                             [`attackHistory.${tid}`]: serverTimestamp()
                         });
                         logEvent(`${me.name} failed to invade ${en.name}`);
@@ -622,8 +671,7 @@
                 }).then(res => {
                     el('loading-screen').classList.add('hidden');
                     toast(res.win ? `VICTORY! +$${fmt(res.loot)} (Score: ${res.myPower} vs ${res.enPower})` : `DEFEAT (Score: ${res.myPower} vs ${res.enPower})`, res.win?'success':'error');
-                    // Update local nation for immediate feedback
-                    nation.lastAttack = { toMillis: () => Date.now() }; // Mock update
+                    nation.lastAttack = { toMillis: () => Date.now() }; 
                 });
             } catch(e) { 
                 el('loading-screen').classList.add('hidden');
@@ -676,7 +724,7 @@
             } catch(e) { toast(e.toString(), 'error'); loadMarket(); }
         };
 
-        // --- ALLIANCE ---
+        // --- ALLIANCE & PROJECTS ---
         async function loadAlliance() {
             if(nation.allianceId) {
                 const snap = await getDoc(doc(db, "alliances", nation.allianceId));
@@ -687,10 +735,55 @@
                     el('alliance-bank').innerText = `$${fmt(alliance.bank)}`;
                     el('no-alliance-ui').classList.add('hidden');
                     el('alliance-ui').classList.remove('hidden');
+                    
+                    // Render Projects
+                    const pList = el('alliance-projects-list');
+                    pList.innerHTML = '';
+                    const myRole = (alliance.leader === user.uid) ? 'leader' : 'member';
+                    
+                    for(let k in ALLIANCE_PROJECTS) {
+                        const p = ALLIANCE_PROJECTS[k];
+                        const isActive = alliance.projects && alliance.projects[k];
+                        const statusColor = isActive ? 'text-green-400' : 'text-slate-500';
+                        const statusText = isActive ? 'ACTIVE' : (myRole === 'leader' ? `BUY $${fmt(p.cost)}` : 'LOCKED');
+                        const btnClass = isActive ? 'hidden' : (myRole === 'leader' ? 'bg-green-600 hover:bg-green-500' : 'bg-slate-700 cursor-not-allowed');
+                        const action = (myRole === 'leader' && !isActive) ? `onclick="window.buyProject('${k}')"` : '';
+
+                        const div = document.createElement('div');
+                        div.className = 'bg-slate-800 p-3 rounded flex justify-between items-center';
+                        div.innerHTML = `
+                            <div>
+                                <div class="text-xs font-bold text-white">${p.name}</div>
+                                <div class="text-[10px] text-slate-400">${p.desc}</div>
+                            </div>
+                            <button ${action} class="${btnClass} text-[10px] px-3 py-1 rounded text-white font-bold transition">
+                                ${statusText}
+                            </button>
+                        `;
+                        pList.appendChild(div);
+                    }
+
+                    // Render Members
                     el('alliance-members-list').innerHTML = alliance.members.map(m => `<div class="bg-slate-800 p-2 rounded text-xs text-white">${m.name}</div>`).join('');
                 }
             }
         }
+
+        window.buyProject = async (pKey) => {
+            const p = ALLIANCE_PROJECTS[pKey];
+            if(alliance.bank < p.cost) return toast("Bank lacks funds!", 'error');
+            
+            await updateDoc(doc(db, "alliances", alliance.id), {
+                bank: increment(-p.cost),
+                [`projects.${pKey}`]: true
+            });
+            alliance.bank -= p.cost;
+            if(!alliance.projects) alliance.projects = {};
+            alliance.projects[pKey] = true;
+            loadAlliance();
+            toast(`${p.name} Activated!`, 'success');
+        };
+
         window.createAlliancePrompt = async () => {
             const name = prompt("Alliance Name:"); if(!name) return;
             if(nation.resources.money < 10000) return toast("Need $10k to form alliance", 'error');
@@ -784,17 +877,27 @@
             if (mins > 1) {
                 const citiesQ = query(collection(db, "cities"), where("nationId", "==", user.uid));
                 const snaps = await getDocs(citiesQ);
-                const cityCount = snaps.size; // Total cities for multiplier
+                const cityCount = snaps.size;
+
+                // BUFFS
+                let moneyMult = 1;
+                let resMult = 1;
+                let foodMult = 1;
+                if(alliance && alliance.projects) {
+                    if(alliance.projects.wall_street) moneyMult = 1.2;
+                    if(alliance.projects.industrial_act) resMult = 1.2;
+                    if(alliance.projects.green_rev) foodMult = 1.5; // NEW
+                }
 
                 let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
                 snaps.forEach(d => {
                     const b = d.data().buildings;
-                    if(b.house)       prod.money     += b.house * (25 + cityCount); // SCALING FORMULA
-                    if(b.farm)        prod.food      += b.farm * 1;
-                    if(b.steelMill)   prod.steel     += b.steelMill * 0.5;
-                    if(b.bauxiteMine) prod.aluminum  += b.bauxiteMine * 0.5;
-                    if(b.refinery)    prod.gasoline  += b.refinery * 0.5;
-                    if(b.ammoFactory) prod.munitions += b.ammoFactory * 0.5;
+                    if(b.house)       prod.money     += (b.house * (25 + cityCount)) * moneyMult;
+                    if(b.farm)        prod.food      += (b.farm * 1) * foodMult; // Apply Food Buff
+                    if(b.steelMill)   prod.steel     += (b.steelMill * 0.5) * resMult;
+                    if(b.bauxiteMine) prod.aluminum  += (b.bauxiteMine * 0.5) * resMult;
+                    if(b.refinery)    prod.gasoline  += (b.refinery * 0.5) * resMult;
+                    if(b.ammoFactory) prod.munitions += (b.ammoFactory * 0.5) * resMult;
                 });
 
                 const updates = { lastCollection: serverTimestamp() };
