@@ -11,22 +11,26 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
+        /* Force full screen and prevent bounce scrolling */
+        html, body { height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
         body { background-color: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .glass-panel { background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255,255,255,0.1); }
         .game-card { background: #1e293b; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        .btn-primary { background: linear-gradient(to bottom, #3b82f6, #2563eb); border-top: 1px solid #60a5fa; transition: transform 0.1s; }
-        .btn-primary:active { transform: translateY(2px); }
+        .btn-primary { background: linear-gradient(to bottom, #3b82f6, #2563eb); border-top: 1px solid #60a5fa; }
         .btn-danger { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
         .btn-success { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+        
+        /* Hide Scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
         .toast { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col select-none">
+<body class="flex flex-col">
 
+    <!-- TOAST NOTIFICATIONS -->
     <div id="toast-container" class="fixed top-16 left-0 right-0 z-[60] flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <!-- LOADING OVERLAY -->
@@ -66,8 +70,7 @@
                     <label class="text-xs font-bold text-slate-400 uppercase">Leader Name</label>
                     <input type="text" id="new-leader-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="President...">
                 </div>
-                
-                <!-- NEW: FILE UPLOAD SECTION -->
+                <!-- FILE UPLOAD SECTION -->
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase">National Flag (Upload)</label>
                     <div class="mt-2 flex items-center gap-4">
@@ -82,20 +85,18 @@
                             <input type="file" id="flag-upload" accept="image/*" class="hidden">
                         </label>
                     </div>
-                    <p class="text-[10px] text-slate-500 mt-1">Images are automatically resized to save data.</p>
                 </div>
-
                 <button id="create-nation-btn" class="btn-success w-full py-4 rounded-lg font-bold text-white shadow-lg mt-4">Establish Nation</button>
             </div>
         </div>
     </div>
 
-    <!-- MAIN GAME UI -->
-    <div id="game-ui" class="hidden flex-1 flex flex-col h-full relative bg-slate-900">
+    <!-- MAIN GAME UI (Flexbox Layout) -->
+    <div id="game-ui" class="hidden w-full h-full flex flex-col relative bg-slate-900">
         
-        <!-- HEADER -->
-        <header class="glass-panel z-20 border-b border-slate-700 shadow-lg">
-            <div class="px-3 py-2 flex justify-between items-center bg-slate-900/50">
+        <!-- HEADER (Fixed Top) -->
+        <header class="flex-none z-20 border-b border-slate-700 shadow-lg bg-slate-900/90 backdrop-blur">
+            <div class="px-3 py-2 flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <img id="nav-flag" src="" class="w-8 h-6 object-cover rounded shadow ring-1 ring-slate-600">
                     <div class="leading-none">
@@ -109,7 +110,7 @@
             </div>
             
             <!-- SCROLLABLE RESOURCES -->
-            <div class="flex overflow-x-auto py-2 px-2 gap-4 bg-slate-950/50 hide-scrollbar border-t border-slate-800">
+            <div class="flex overflow-x-auto py-2 px-2 gap-4 bg-slate-950/50 border-t border-slate-800">
                 <div class="flex flex-col items-center min-w-[60px]">
                     <span class="text-[10px] text-slate-400 uppercase">Money</span>
                     <span class="font-bold text-emerald-400">$<span id="res-money">0</span></span>
@@ -137,11 +138,11 @@
             </div>
         </header>
 
-        <!-- MAIN SCROLL AREA -->
-        <main class="flex-1 overflow-y-auto pb-24 relative" id="main-scroll">
+        <!-- MAIN SCROLL AREA (Fills Middle Space) -->
+        <main class="flex-1 overflow-y-auto relative" id="main-scroll">
             
             <!-- DASHBOARD -->
-            <div id="view-dashboard" class="p-4 space-y-6">
+            <div id="view-dashboard" class="p-4 space-y-6 pb-6">
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700 shadow-xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="landmark" size="100"></i></div>
                     <div class="relative z-10">
@@ -196,7 +197,7 @@
             </div>
 
             <!-- WAR ROOM -->
-            <div id="view-war" class="hidden p-4 space-y-4">
+            <div id="view-war" class="hidden p-4 space-y-4 pb-6">
                 <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl mb-6">
                     <h2 class="text-red-500 font-bold text-lg flex items-center gap-2">
                         <i data-lucide="crosshair"></i> Global War Room
@@ -209,14 +210,14 @@
             </div>
             
             <!-- SETTINGS -->
-            <div id="view-settings" class="hidden p-4">
+            <div id="view-settings" class="hidden p-4 pb-6">
                 <button id="logout-btn" class="w-full btn-danger p-4 rounded-lg font-bold">Log Out</button>
             </div>
 
         </main>
 
-        <!-- NAV BAR -->
-        <nav class="absolute bottom-0 w-full glass-panel border-t border-slate-700 pb-safe pt-2 px-2 flex justify-around items-center z-30">
+        <!-- NAV BAR (Fixed Bottom) -->
+        <nav class="flex-none w-full glass-panel flex justify-around items-center h-20 pb-4 z-50">
             <button onclick="switchView('dashboard')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-blue-500">
                 <i data-lucide="layout-dashboard" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">Nation</span>
             </button>
@@ -229,8 +230,8 @@
         </nav>
 
         <!-- RECRUIT MODAL -->
-        <div id="recruit-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center sm:p-4">
-            <div class="bg-slate-800 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 border-t sm:border border-slate-700 shadow-2xl animate-slide-up">
+        <div id="recruit-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-end sm:items-center justify-center sm:p-4">
+            <div class="bg-slate-800 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 border-t sm:border border-slate-700 shadow-2xl animate-slide-up mb-safe">
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="users"></i> Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
                     <button onclick="document.getElementById('recruit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
@@ -253,6 +254,7 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // --- PASTE FIREBASE CONFIG HERE ---
         const firebaseConfig = {
             apiKey: "AIzaSyBHqPKczjs451HSI9NnRDKM7hXtWOwu0f4",
             authDomain: "opennations-b73bd.firebaseapp.com",
@@ -287,7 +289,7 @@
         let currentUser = null;
         let currentNation = null;
         let selectedRecruitType = null;
-        let uploadedFlagBase64 = null; // Store image string
+        let uploadedFlagBase64 = null; 
 
         // --- HELPERS ---
         const formatNum = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
@@ -305,7 +307,7 @@
             setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 300); }, 3000);
         };
 
-        // --- IMAGE COMPRESSION LOGIC (MAGIC SAUCE) ---
+        // --- IMAGE COMPRESSION ---
         const compressImage = (file) => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -316,32 +318,24 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        // MAX SIZE: 200x200px (Very small, perfect for free db)
                         const MAX = 200;
                         let width = img.width;
                         let height = img.height;
-
-                        if (width > height) {
-                            if (width > MAX) { height *= MAX / width; width = MAX; }
-                        } else {
-                            if (height > MAX) { width *= MAX / height; height = MAX; }
-                        }
+                        if (width > height) { if (width > MAX) { height *= MAX / width; width = MAX; } } 
+                        else { if (height > MAX) { width *= MAX / height; height = MAX; } }
                         canvas.width = width;
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-                        // Convert to JPEG at 70% quality
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
                 };
             });
         };
 
-        // Handle File Input
         document.getElementById('flag-upload').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
                 uploadedFlagBase64 = await compressImage(file);
-                // Show preview
                 document.getElementById('flag-preview').src = uploadedFlagBase64;
                 document.getElementById('flag-preview').classList.remove('hidden');
                 document.getElementById('flag-placeholder').classList.add('hidden');
@@ -367,7 +361,6 @@
             show('loading-screen');
             const nationRef = doc(db, "nations", currentUser.uid);
             const snap = await getDoc(nationRef);
-
             if (snap.exists()) {
                 currentNation = snap.data();
                 await calculateOffline(nationRef, currentNation);
@@ -378,13 +371,11 @@
             }
         }
 
-        // --- CREATE NATION (UPDATED) ---
+        // --- CREATE NATION ---
         document.getElementById('create-nation-btn').onclick = async () => {
             const name = document.getElementById('new-nation-name').value;
             const leader = document.getElementById('new-leader-name').value;
-            // Use uploaded flag OR default if none selected
             const flag = uploadedFlagBase64 || 'https://lucide.dev/icon.svg';
-
             if(!name || !leader) return toast("Name & Leader required", 'error');
 
             show('loading-screen');
@@ -408,8 +399,7 @@
         async function calculateOffline(ref, data) {
             const now = new Date();
             const last = data.lastCollection?.toDate() || now;
-            const mins = Math.min(Math.floor((now - last) / 60000), 1440); // Cap 24h
-
+            const mins = Math.min(Math.floor((now - last) / 60000), 1440);
             if (mins > 1) {
                 const citiesQ = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
                 const snaps = await getDocs(citiesQ);
@@ -424,7 +414,6 @@
                     if(b.refinery) prod.gasoline += b.refinery * 4;
                     if(b.ammoFactory) prod.munitions += b.ammoFactory * 5;
                 });
-
                 const updates = { lastCollection: serverTimestamp() };
                 for(let k in prod) {
                     updates[`resources.${k}`] = increment(prod[k] * mins);
@@ -459,7 +448,6 @@
             const q = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
             const snaps = await getDocs(q);
             list.innerHTML = '';
-            
             snaps.forEach(d => {
                 const c = d.data();
                 const cid = d.id;
@@ -512,18 +500,14 @@
             const amt = parseInt(document.getElementById('recruit-amount').value);
             const unit = UNIT_STATS[selectedRecruitType];
             const updates = {};
-            
             for(let r in unit.cost) {
                 if(currentNation.resources[r] < unit.cost[r] * amt) return toast(`Missing ${r}`, 'error');
                 updates[`resources.${r}`] = increment(-(unit.cost[r] * amt));
             }
-            
             updates[`military.${selectedRecruitType}`] = increment(amt);
             await updateDoc(doc(db, "nations", currentUser.uid), updates);
-            
             for(let r in unit.cost) currentNation.resources[r] -= (unit.cost[r] * amt);
             currentNation.military[selectedRecruitType] += amt;
-            
             renderResources();
             document.getElementById('recruit-modal').classList.add('hidden');
             toast(`Recruited ${amt} units`, 'success');
@@ -556,7 +540,7 @@
                 await runTransaction(db, async (t) => {
                     const me = (await t.get(doc(db,"nations",currentUser.uid))).data();
                     const en = (await t.get(doc(db,"nations",tid))).data();
-                    const myS = (me.military.soldiers) + (me.military.tanks*10); // Simplified
+                    const myS = (me.military.soldiers) + (me.military.tanks*10); 
                     const enS = (en.military.soldiers) + (en.military.tanks*10);
                     
                     if(myS * (0.9+Math.random()*0.2) > enS * (0.9+Math.random()*0.2)) {
