@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OpenNations: World Conflict</title>
+    <title>OpenNations: Global Conflict</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
@@ -11,250 +11,242 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* Force full screen and prevent bounce scrolling */
+        /* CORE STYLES */
         html, body { height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
         body { background-color: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         
+        /* UI COMPONENTS */
         .glass-panel { background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255,255,255,0.1); }
         .game-card { background: #1e293b; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        .btn-primary { background: linear-gradient(to bottom, #3b82f6, #2563eb); border-top: 1px solid #60a5fa; }
-        .btn-danger { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
-        .btn-success { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
         
-        /* Hide Scrollbar */
+        /* BUTTONS */
+        .btn-blue { background: linear-gradient(to bottom, #3b82f6, #2563eb); border-top: 1px solid #60a5fa; }
+        .btn-red { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
+        .btn-green { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
+        .btn-amber { background: linear-gradient(to bottom, #f59e0b, #d97706); border-top: 1px solid #fbbf24; }
+        .btn:active { transform: translateY(1px); filter: brightness(0.9); }
+
+        /* UTILS */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
-        
         .toast { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <!-- TOAST NOTIFICATIONS -->
+    <!-- TOASTS & LOADERS -->
     <div id="toast-container" class="fixed top-16 left-0 right-0 z-[60] flex flex-col items-center gap-2 pointer-events-none"></div>
-
-    <!-- LOADING OVERLAY -->
     <div id="loading-screen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center">
-        <div class="relative w-16 h-16 mb-4">
-            <div class="absolute inset-0 border-4 border-blue-500/30 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <div class="animate-spin text-blue-500 mb-4"><i data-lucide="loader-2" width="48" height="48"></i></div>
         <h2 class="text-xl font-bold tracking-[0.2em] text-blue-400">CONNECTING...</h2>
     </div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden fixed inset-0 z-40 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center">
         <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center p-6">
-            <div class="text-center mb-10">
-                <i data-lucide="globe-2" class="w-20 h-20 text-blue-500 mx-auto mb-4 rounded-full shadow-lg shadow-blue-500/50"></i>
-                <h1 class="text-5xl font-black text-white tracking-tighter mb-2">OPEN<span class="text-blue-500">NATIONS</span></h1>
-            </div>
-            <button id="login-btn" class="btn-primary w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-2xl flex items-center justify-center gap-3">
+            <i data-lucide="globe-2" class="w-20 h-20 text-blue-500 mx-auto mb-4 animate-pulse"></i>
+            <h1 class="text-5xl font-black text-white tracking-tighter mb-8">OPEN<span class="text-blue-500">NATIONS</span></h1>
+            <button id="login-btn" class="btn-blue w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-2xl flex items-center justify-center gap-3">
                 <i data-lucide="log-in"></i> Initialize Regime
             </button>
         </div>
     </div>
 
-    <!-- CREATE NATION SCREEN -->
+    <!-- CREATE NATION -->
     <div id="create-screen" class="hidden fixed inset-0 z-40 bg-slate-900 p-6 flex items-center justify-center overflow-y-auto">
-        <div class="w-full max-w-md bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl my-auto">
-            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <i data-lucide="flag" class="text-blue-500"></i> Found New Nation
-            </h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase">Nation Name</label>
-                    <input type="text" id="new-nation-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="Republic of...">
+        <div class="w-full max-w-md bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl my-auto space-y-4">
+            <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="flag" class="text-blue-500"></i> Found Nation</h2>
+            <input type="text" id="new-nation-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white" placeholder="Nation Name">
+            <input type="text" id="new-leader-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white" placeholder="Leader Name">
+            
+            <div class="flex items-center gap-4">
+                <div class="relative w-16 h-12 bg-slate-900 rounded border border-slate-700 overflow-hidden shrink-0">
+                    <img id="flag-preview" class="w-full h-full object-cover hidden">
+                    <div id="flag-placeholder" class="absolute inset-0 flex items-center justify-center text-slate-600"><i data-lucide="image"></i></div>
                 </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase">Leader Name</label>
-                    <input type="text" id="new-leader-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="President...">
-                </div>
-                <!-- FILE UPLOAD SECTION -->
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase">National Flag (Upload)</label>
-                    <div class="mt-2 flex items-center gap-4">
-                        <div class="relative w-16 h-12 bg-slate-900 rounded border border-slate-700 overflow-hidden flex-shrink-0">
-                            <img id="flag-preview" class="w-full h-full object-cover hidden">
-                            <div id="flag-placeholder" class="absolute inset-0 flex items-center justify-center text-slate-600">
-                                <i data-lucide="image"></i>
-                            </div>
-                        </div>
-                        <label class="cursor-pointer btn-primary px-4 py-2 rounded text-sm font-bold flex-1 text-center">
-                            Select Image
-                            <input type="file" id="flag-upload" accept="image/*" class="hidden">
-                        </label>
-                    </div>
-                </div>
-                <button id="create-nation-btn" class="btn-success w-full py-4 rounded-lg font-bold text-white shadow-lg mt-4">Establish Nation</button>
+                <label class="cursor-pointer btn-blue px-4 py-2 rounded text-sm font-bold flex-1 text-center">
+                    Upload Flag <input type="file" id="flag-upload" accept="image/*" class="hidden">
+                </label>
             </div>
+            <button id="create-nation-btn" class="btn-green w-full py-4 rounded-lg font-bold text-white shadow-lg mt-4">Establish Nation</button>
         </div>
     </div>
 
-    <!-- MAIN GAME UI (Flexbox Layout) -->
+    <!-- MAIN GAME UI -->
     <div id="game-ui" class="hidden w-full h-full flex flex-col relative bg-slate-900">
         
-        <!-- HEADER (Fixed Top) -->
+        <!-- HEADER (Resources) -->
         <header class="flex-none z-20 border-b border-slate-700 shadow-lg bg-slate-900/90 backdrop-blur">
             <div class="px-3 py-2 flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <img id="nav-flag" src="" class="w-8 h-6 object-cover rounded shadow ring-1 ring-slate-600">
                     <div class="leading-none">
                         <div id="nav-nation-name" class="font-bold text-sm text-white">Loading...</div>
-                        <div class="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ONLINE
-                        </div>
+                        <div id="nav-alliance-tag" class="text-[10px] text-blue-400 font-bold">NO ALLIANCE</div>
                     </div>
                 </div>
                 <div class="text-xs font-mono text-slate-400">Day <span id="game-day">1</span></div>
             </div>
-            
-            <!-- SCROLLABLE RESOURCES -->
+            <!-- Resources -->
             <div class="flex overflow-x-auto py-2 px-2 gap-4 bg-slate-950/50 border-t border-slate-800">
-                <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase">Money</span>
-                    <span class="font-bold text-emerald-400">$<span id="res-money">0</span></span>
-                </div>
-                <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase">Food</span>
-                    <span class="font-bold text-orange-300"><span id="res-food">0</span></span>
-                </div>
-                <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase">Steel</span>
-                    <span class="font-bold text-slate-300"><span id="res-steel">0</span></span>
-                </div>
-                <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase">Alum.</span>
-                    <span class="font-bold text-slate-400"><span id="res-aluminum">0</span></span>
-                </div>
-                <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase">Gas</span>
-                    <span class="font-bold text-purple-400"><span id="res-gasoline">0</span></span>
-                </div>
-                <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase">Ammo</span>
-                    <span class="font-bold text-red-400"><span id="res-munitions">0</span></span>
-                </div>
+                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">MONEY</span><span class="font-bold text-emerald-400 text-xs">$<span id="res-money">0</span></span></div>
+                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">FOOD</span><span class="font-bold text-orange-300 text-xs"><span id="res-food">0</span></span></div>
+                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">STEEL</span><span class="font-bold text-slate-300 text-xs"><span id="res-steel">0</span></span></div>
+                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">ALUM</span><span class="font-bold text-slate-400 text-xs"><span id="res-aluminum">0</span></span></div>
+                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">GAS</span><span class="font-bold text-purple-400 text-xs"><span id="res-gasoline">0</span></span></div>
+                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">AMMO</span><span class="font-bold text-red-400 text-xs"><span id="res-munitions">0</span></span></div>
             </div>
         </header>
 
-        <!-- MAIN SCROLL AREA (Fills Middle Space) -->
+        <!-- CONTENT VIEWS -->
         <main class="flex-1 overflow-y-auto relative" id="main-scroll">
             
-            <!-- DASHBOARD -->
-            <div id="view-dashboard" class="p-4 space-y-6 pb-6">
+            <!-- 1. EMPIRE VIEW -->
+            <div id="view-dashboard" class="p-4 space-y-6 pb-20">
+                <!-- Nation Stats -->
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700 shadow-xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="landmark" size="100"></i></div>
-                    <div class="relative z-10">
-                        <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">State of the Nation</h2>
-                        <div class="text-3xl font-black text-white mb-4" id="dash-nation-name">...</div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800">
-                                <div class="text-xs text-slate-500 uppercase">Leader</div>
-                                <div class="font-bold text-white" id="dash-leader">Unknown</div>
-                            </div>
-                            <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800">
-                                <div class="text-xs text-slate-500 uppercase">Population</div>
-                                <div class="font-bold text-white" id="dash-pop">0</div>
-                            </div>
+                    <div class="relative z-10 flex justify-between items-end">
+                        <div>
+                            <div class="text-xs font-bold text-blue-400 uppercase tracking-widest">Population</div>
+                            <div class="text-3xl font-black text-white" id="dash-pop">0</div>
+                            <div class="text-xs text-slate-500 mt-1" id="dash-leader">Leader</div>
                         </div>
+                        <i data-lucide="landmark" class="text-slate-700" size="48"></i>
                     </div>
                 </div>
 
-                <!-- MILITARY -->
+                <!-- Military Grid -->
                 <div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase mb-3 ml-1">Military Assets</h3>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase mb-3 ml-1">Military</h3>
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="openRecruitModal('soldiers')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div><div class="text-xs text-slate-400">Soldiers</div><div class="font-bold text-lg text-white" id="mil-soldiers">0</div></div>
-                            <i data-lucide="users" class="text-emerald-500"></i>
+                        <button onclick="openRecruitModal('soldiers')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
+                            <div><div class="text-[10px] text-slate-400">SOLDIERS</div><div class="font-bold text-white" id="mil-soldiers">0</div></div><i data-lucide="users" class="text-emerald-500" size="18"></i>
                         </button>
-                        <button onclick="openRecruitModal('tanks')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div><div class="text-xs text-slate-400">Tanks</div><div class="font-bold text-lg text-white" id="mil-tanks">0</div></div>
-                            <i data-lucide="shield" class="text-blue-500"></i>
+                        <button onclick="openRecruitModal('tanks')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
+                            <div><div class="text-[10px] text-slate-400">TANKS</div><div class="font-bold text-white" id="mil-tanks">0</div></div><i data-lucide="shield" class="text-blue-500" size="18"></i>
                         </button>
-                        <button onclick="openRecruitModal('aircraft')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div><div class="text-xs text-slate-400">Aircraft</div><div class="font-bold text-lg text-white" id="mil-aircraft">0</div></div>
-                            <i data-lucide="plane" class="text-purple-500"></i>
+                        <button onclick="openRecruitModal('aircraft')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
+                            <div><div class="text-[10px] text-slate-400">JETS</div><div class="font-bold text-white" id="mil-aircraft">0</div></div><i data-lucide="plane" class="text-purple-500" size="18"></i>
                         </button>
-                        <button onclick="openRecruitModal('ships')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div><div class="text-xs text-slate-400">Ships</div><div class="font-bold text-lg text-white" id="mil-ships">0</div></div>
-                            <i data-lucide="anchor" class="text-orange-500"></i>
+                        <button onclick="openRecruitModal('ships')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
+                            <div><div class="text-[10px] text-slate-400">SHIPS</div><div class="font-bold text-white" id="mil-ships">0</div></div><i data-lucide="anchor" class="text-orange-500" size="18"></i>
                         </button>
                     </div>
+                    <button onclick="openSpyModal()" class="w-full mt-3 btn-amber p-2 rounded text-xs font-bold text-white shadow-lg">TRAIN SPIES</button>
                 </div>
 
-                <!-- CITIES -->
+                <!-- Cities -->
                 <div>
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase ml-1">Territories</h3>
-                        <button id="found-city-btn" class="text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-full font-bold shadow-lg shadow-blue-900/50 transition flex items-center gap-1">
-                            <i data-lucide="plus" size="10"></i> FOUND CITY ($50k)
-                        </button>
+                        <h3 class="text-xs font-bold text-slate-500 uppercase ml-1">Cities</h3>
+                        <button id="found-city-btn" class="text-[10px] bg-blue-600 px-3 py-1 rounded-full font-bold text-white shadow">+ FOUND ($50k)</button>
                     </div>
                     <div id="cities-list" class="space-y-4"></div>
                 </div>
             </div>
 
-            <!-- WAR ROOM -->
-            <div id="view-war" class="hidden p-4 space-y-4 pb-6">
-                <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl mb-6">
-                    <h2 class="text-red-500 font-bold text-lg flex items-center gap-2">
-                        <i data-lucide="crosshair"></i> Global War Room
-                    </h2>
-                    <p class="text-xs text-red-200/60 mt-1">Select a target. Ensure your military score exceeds theirs to guarantee victory and loot resources.</p>
+            <!-- 2. WAR VIEW -->
+            <div id="view-war" class="hidden p-4 space-y-4 pb-20">
+                <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl">
+                    <h2 class="text-red-500 font-bold text-lg flex items-center gap-2"><i data-lucide="crosshair"></i> War Room</h2>
+                    <p class="text-xs text-red-200/60 mt-1">Select a target. Ensure your military score guarantees victory.</p>
                 </div>
-                <div id="enemy-list" class="space-y-3">
-                    <div class="flex justify-center p-8"><i class="animate-spin text-slate-600" data-lucide="radar"></i></div>
+                <div id="enemy-list" class="space-y-3"></div>
+            </div>
+
+            <!-- 3. MARKET VIEW -->
+            <div id="view-market" class="hidden p-4 space-y-4 pb-20">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-white font-bold text-lg">Global Exchange</h2>
+                    <button onclick="document.getElementById('sell-modal').classList.remove('hidden')" class="btn-green px-3 py-1 rounded text-xs font-bold text-white">+ SELL</button>
+                </div>
+                <div id="market-list" class="space-y-2">
+                    <div class="text-center py-10"><i class="animate-spin text-slate-600" data-lucide="loader"></i></div>
                 </div>
             </div>
-            
-            <!-- SETTINGS -->
-            <div id="view-settings" class="hidden p-4 pb-6">
-                <button id="logout-btn" class="w-full btn-danger p-4 rounded-lg font-bold">Log Out</button>
+
+            <!-- 4. ALLIANCE VIEW -->
+            <div id="view-alliance" class="hidden p-4 space-y-4 pb-20">
+                <!-- If No Alliance -->
+                <div id="no-alliance-ui" class="text-center space-y-4 mt-10">
+                    <i data-lucide="shield-alert" class="mx-auto text-slate-600" size="64"></i>
+                    <p class="text-slate-400 text-sm">You are vulnerable alone.</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="createAlliancePrompt()" class="btn-blue p-3 rounded font-bold text-white text-sm">Create Alliance</button>
+                        <button onclick="loadAlliancesList()" class="bg-slate-700 p-3 rounded font-bold text-white text-sm">Join Existing</button>
+                    </div>
+                    <div id="join-alliance-list" class="text-left space-y-2 mt-4"></div>
+                </div>
+                <!-- If In Alliance -->
+                <div id="alliance-ui" class="hidden space-y-4">
+                    <div class="bg-blue-900/30 border border-blue-500/30 p-4 rounded-xl text-center">
+                        <h2 id="alliance-name-display" class="text-2xl font-black text-blue-400">ALLIANCE</h2>
+                        <div class="text-xs text-blue-200/60 mt-1">Bank Balance: <span class="font-mono text-white" id="alliance-bank">$0</span></div>
+                        <button onclick="depositToBank()" class="mt-2 text-[10px] bg-blue-600 px-2 py-1 rounded text-white">Deposit $10k</button>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase">Members</h3>
+                    <div id="alliance-members-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- 5. NEWS VIEW (In Menu) -->
+            <div id="view-news" class="hidden p-4 space-y-4 pb-20">
+                <h2 class="text-white font-bold text-lg mb-4">World Events</h2>
+                <div id="news-feed" class="space-y-3 font-mono text-xs"></div>
+                <button id="logout-btn" class="w-full btn-red p-3 rounded mt-8 font-bold text-white">LOGOUT</button>
             </div>
 
         </main>
 
-        <!-- NAV BAR (Fixed Bottom) -->
-        <nav class="flex-none w-full glass-panel flex justify-around items-center h-20 pb-4 z-50">
-            <button onclick="switchView('dashboard')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-blue-500">
-                <i data-lucide="layout-dashboard" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">Nation</span>
-            </button>
-            <button onclick="switchView('war')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-slate-500">
-                <i data-lucide="sword" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">War</span>
-            </button>
-             <button onclick="switchView('settings')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-slate-500">
-                <i data-lucide="settings" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">Menu</span>
-            </button>
+        <!-- NAV BAR -->
+        <nav class="flex-none w-full glass-panel flex justify-around items-center h-16 pb-1 z-50 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+            <button onclick="switchView('dashboard')" class="nav-btn text-blue-500 flex flex-col items-center gap-1 w-1/5"><i data-lucide="layout-dashboard" size="20"></i>Empire</button>
+            <button onclick="switchView('war')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="sword" size="20"></i>War</button>
+            <button onclick="switchView('market')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="bar-chart-3" size="20"></i>Market</button>
+            <button onclick="switchView('alliance')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="shield" size="20"></i>Alliance</button>
+            <button onclick="switchView('news')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="newspaper" size="20"></i>News</button>
         </nav>
 
-        <!-- RECRUIT MODAL -->
-        <div id="recruit-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-end sm:items-center justify-center sm:p-4">
-            <div class="bg-slate-800 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 border-t sm:border border-slate-700 shadow-2xl animate-slide-up mb-safe">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="users"></i> Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
-                    <button onclick="document.getElementById('recruit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
-                </div>
-                <div class="bg-slate-900 p-4 rounded-lg mb-6 text-sm space-y-2">
-                    <div class="flex justify-between text-slate-400"><span>Cost per unit:</span></div>
-                    <div id="recruit-cost-display" class="grid grid-cols-2 gap-2 font-mono text-white font-bold"></div>
-                </div>
+        <!-- MODALS -->
+        <!-- Recruit Modal -->
+        <div id="recruit-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700">
+                <h3 class="text-lg font-bold text-white mb-2">Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
+                <div id="recruit-cost-display" class="text-xs text-slate-400 mb-4 font-mono"></div>
                 <div class="flex gap-2">
-                    <input type="number" id="recruit-amount" value="10" min="1" class="bg-slate-900 border border-slate-600 text-center text-white font-bold rounded-lg w-20 outline-none focus:border-blue-500">
-                    <button id="confirm-recruit-btn" class="flex-1 btn-primary py-3 rounded-lg font-bold">PURCHASE</button>
+                    <input type="number" id="recruit-amount" value="10" class="bg-slate-900 border border-slate-600 rounded w-20 text-center text-white p-2">
+                    <button id="confirm-recruit-btn" class="flex-1 btn-blue rounded font-bold text-white text-sm">BUY</button>
                 </div>
+                <button onclick="closeModals()" class="w-full mt-2 text-xs text-slate-500 py-2">CANCEL</button>
             </div>
         </div>
+        
+        <!-- Sell Modal -->
+        <div id="sell-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700">
+                <h3 class="text-lg font-bold text-white mb-4">Post Trade Offer</h3>
+                <div class="space-y-3">
+                    <select id="sell-resource" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
+                        <option value="food">Food</option><option value="steel">Steel</option>
+                        <option value="aluminum">Aluminum</option><option value="gasoline">Gas</option>
+                        <option value="munitions">Ammo</option>
+                    </select>
+                    <input type="number" id="sell-amount" placeholder="Amount (e.g. 100)" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
+                    <input type="number" id="sell-price" placeholder="Total Price ($)" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
+                    <button onclick="postTrade()" class="w-full btn-green p-3 rounded font-bold text-white">POST OFFER</button>
+                </div>
+                <button onclick="closeModals()" class="w-full mt-2 text-xs text-slate-500 py-2">CANCEL</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- LOGIC SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit, orderBy, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- PASTE FIREBASE CONFIG HERE ---
         const firebaseConfig = {
             apiKey: "AIzaSyBHqPKczjs451HSI9NnRDKM7hXtWOwu0f4",
             authDomain: "opennations-b73bd.firebaseapp.com",
@@ -269,298 +261,378 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- CONSTANTS ---
+        // --- GAME DATA ---
         const UNIT_STATS = {
             soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
             tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
             aircraft: { cost: { money: 2000, aluminum: 15, gasoline: 10, munitions: 10 } },
-            ships:    { cost: { money: 5000, steel: 50, gasoline: 20, munitions: 20 } }
+            ships:    { cost: { money: 5000, steel: 50, gasoline: 20, munitions: 20 } },
+            spies:    { cost: { money: 10000, food: 100 } }
         };
-
         const BUILDING_STATS = {
-            farm:           { name: "Farm",             cost: 1000 },
-            steelMill:      { name: "Steel Mill",       cost: 2500 },
-            bauxiteMine:    { name: "Bauxite Mine",     cost: 3000 },
-            refinery:       { name: "Oil Refinery",     cost: 3500 },
-            ammoFactory:    { name: "Ammo Factory",     cost: 5000 },
-            house:          { name: "Housing Project",  cost: 500 }
+            farm: { name: "Farm", cost: 1000 }, steelMill: { name: "Steel Mill", cost: 2500 },
+            bauxiteMine: { name: "Bax. Mine", cost: 3000 }, refinery: { name: "Refinery", cost: 3500 },
+            ammoFactory: { name: "Ammo Fac.", cost: 5000 }, house: { name: "Housing", cost: 500 }
         };
 
-        let currentUser = null;
-        let currentNation = null;
-        let selectedRecruitType = null;
-        let uploadedFlagBase64 = null; 
+        let user = null, nation = null, alliance = null, uploadedFlag = null, recruitType = null;
 
-        // --- HELPERS ---
-        const formatNum = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
-        const show = (id) => document.getElementById(id).classList.remove('hidden');
-        const hide = (id) => document.getElementById(id).classList.add('hidden');
+        // --- UTILS ---
+        const el = (id) => document.getElementById(id);
+        const fmt = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
         const toast = (msg, type='info') => {
-            const container = document.getElementById('toast-container');
-            const el = document.createElement('div');
-            el.className = `toast pointer-events-auto px-6 py-3 rounded-xl shadow-2xl text-white text-xs font-bold uppercase tracking-widest backdrop-blur-md border ${
-                type === 'error' ? 'bg-red-500/80 border-red-400' : 
-                type === 'success' ? 'bg-emerald-500/80 border-emerald-400' : 
-                'bg-blue-500/80 border-blue-400'}`;
-            el.innerHTML = msg;
-            container.appendChild(el);
-            setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 300); }, 3000);
+            const d = document.createElement('div');
+            d.className = `toast px-4 py-2 rounded-lg shadow text-white text-xs font-bold border ${type=='error'?'bg-red-600 border-red-400':'bg-blue-600 border-blue-400'}`;
+            d.innerText = msg; el('toast-container').appendChild(d);
+            setTimeout(() => d.remove(), 3000);
         };
-
-        // --- IMAGE COMPRESSION ---
-        const compressImage = (file) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const MAX = 200;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > height) { if (width > MAX) { height *= MAX / width; width = MAX; } } 
-                        else { if (height > MAX) { width *= MAX / height; height = MAX; } }
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
-                    };
-                };
-            });
-        };
-
-        document.getElementById('flag-upload').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                uploadedFlagBase64 = await compressImage(file);
-                document.getElementById('flag-preview').src = uploadedFlagBase64;
-                document.getElementById('flag-preview').classList.remove('hidden');
-                document.getElementById('flag-placeholder').classList.add('hidden');
+        const compress = (file) => new Promise(r => {
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = e => {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = () => {
+                    const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+                    const s = 150; c.width=s; c.height=s; ctx.drawImage(img,0,0,s,s);
+                    r(c.toDataURL('image/jpeg', 0.6));
+                }
             }
         });
+        window.closeModals = () => document.querySelectorAll('[id$="-modal"]').forEach(m => m.classList.add('hidden'));
 
         // --- AUTH ---
-        onAuthStateChanged(auth, async (user) => {
-            hide('loading-screen');
-            if (user) {
-                currentUser = user;
-                hide('auth-screen');
-                await loadGame();
-            } else {
-                show('auth-screen');
-            }
+        onAuthStateChanged(auth, async (u) => {
+            el('loading-screen').classList.add('hidden');
+            if(u) { user = u; el('auth-screen').classList.add('hidden'); loadGame(); }
+            else { el('auth-screen').classList.remove('hidden'); }
         });
-        document.getElementById('login-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => toast(e.message, 'error'));
-        document.getElementById('logout-btn').onclick = () => { signOut(auth); location.reload(); };
+        el('login-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+        el('logout-btn').onclick = () => { signOut(auth); location.reload(); };
 
-        // --- LOAD GAME ---
+        // --- INIT ---
         async function loadGame() {
-            show('loading-screen');
-            const nationRef = doc(db, "nations", currentUser.uid);
-            const snap = await getDoc(nationRef);
-            if (snap.exists()) {
-                currentNation = snap.data();
-                await calculateOffline(nationRef, currentNation);
+            el('loading-screen').classList.remove('hidden');
+            const snap = await getDoc(doc(db, "nations", user.uid));
+            if(snap.exists()) {
+                nation = snap.data();
+                await calcOffline();
+                await loadAlliance();
                 initUI();
             } else {
-                hide('loading-screen');
-                show('create-screen');
-            }
-        }
-
-        // --- CREATE NATION ---
-        document.getElementById('create-nation-btn').onclick = async () => {
-            const name = document.getElementById('new-nation-name').value;
-            const leader = document.getElementById('new-leader-name').value;
-            const flag = uploadedFlagBase64 || 'https://lucide.dev/icon.svg';
-            if(!name || !leader) return toast("Name & Leader required", 'error');
-
-            show('loading-screen');
-            try {
-                await setDoc(doc(db, "nations", currentUser.uid), {
-                    name, leader, flag, ownerId: currentUser.uid,
-                    resources: { money: 50000, food: 1000, steel: 100, aluminum: 0, gasoline: 0, munitions: 100 },
-                    military: { soldiers: 50, tanks: 0, aircraft: 0, ships: 0 },
-                    stats: { population: 1000, score: 0 },
-                    lastCollection: serverTimestamp()
-                });
-                await addDoc(collection(db, "cities"), {
-                    nationId: currentUser.uid, name: "Capital",
-                    buildings: { house: 10, farm: 2, steelMill: 1, bauxiteMine: 0, refinery: 0, ammoFactory: 1 }
-                });
-                location.reload();
-            } catch(e) { hide('loading-screen'); toast(e.message, 'error'); }
-        };
-
-        // --- OFFLINE LOGIC ---
-        async function calculateOffline(ref, data) {
-            const now = new Date();
-            const last = data.lastCollection?.toDate() || now;
-            const mins = Math.min(Math.floor((now - last) / 60000), 1440);
-            if (mins > 1) {
-                const citiesQ = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
-                const snaps = await getDocs(citiesQ);
-                let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
-                
-                snaps.forEach(d => {
-                    const b = d.data().buildings;
-                    if(b.house) prod.money += b.house * 50;
-                    if(b.farm) prod.food += b.farm * 10;
-                    if(b.steelMill) prod.steel += b.steelMill * 5;
-                    if(b.bauxiteMine) prod.aluminum += b.bauxiteMine * 4;
-                    if(b.refinery) prod.gasoline += b.refinery * 4;
-                    if(b.ammoFactory) prod.munitions += b.ammoFactory * 5;
-                });
-                const updates = { lastCollection: serverTimestamp() };
-                for(let k in prod) {
-                    updates[`resources.${k}`] = increment(prod[k] * mins);
-                    currentNation.resources[k] += (prod[k] * mins);
-                }
-                await updateDoc(ref, updates);
-                toast(`Offline for ${mins}m: Resources updated!`, 'success');
+                el('loading-screen').classList.add('hidden');
+                el('create-screen').classList.remove('hidden');
             }
         }
 
         // --- UI ---
         function initUI() {
-            hide('loading-screen'); show('game-ui'); lucide.createIcons();
-            document.getElementById('nav-nation-name').innerText = currentNation.name;
-            document.getElementById('nav-flag').src = currentNation.flag;
-            document.getElementById('dash-nation-name').innerText = currentNation.name;
-            document.getElementById('dash-leader').innerText = currentNation.leader;
-            document.getElementById('dash-pop').innerText = formatNum(currentNation.stats.population);
+            el('loading-screen').classList.add('hidden');
+            el('create-screen').classList.add('hidden');
+            el('game-ui').classList.remove('hidden');
+            lucide.createIcons();
+            
+            el('nav-nation-name').innerText = nation.name;
+            el('nav-flag').src = nation.flag;
+            el('dash-leader').innerText = nation.leader;
+            el('dash-pop').innerText = fmt(nation.stats?.population || 1000);
             renderResources();
             loadCities();
+            loadNews();
         }
 
         function renderResources() {
-            const r = currentNation.resources;
-            const m = currentNation.military;
-            for(let k in r) document.getElementById(`res-${k}`).innerText = formatNum(r[k]);
-            for(let k in m) document.getElementById(`mil-${k}`).innerText = formatNum(m[k]);
+            for(let r in nation.resources) el(`res-${r}`).innerText = fmt(nation.resources[r]);
+            for(let u in nation.military) { if(el(`mil-${u}`)) el(`mil-${u}`).innerText = fmt(nation.military[u]); }
         }
 
+        // --- CITIES ---
         async function loadCities() {
-            const list = document.getElementById('cities-list');
-            const q = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
-            const snaps = await getDocs(q);
-            list.innerHTML = '';
+            const list = el('cities-list'); list.innerHTML = '';
+            const snaps = await getDocs(query(collection(db, "cities"), where("nationId", "==", user.uid)));
             snaps.forEach(d => {
                 const c = d.data();
-                const cid = d.id;
-                let btns = '';
-                for(let t in BUILDING_STATS) {
-                    btns += `<button onclick="window.build('${cid}','${t}')" class="bg-slate-800 p-2 rounded border border-slate-700 hover:border-blue-500 transition text-left">
-                        <div class="text-[9px] text-slate-400 uppercase">${BUILDING_STATS[t].name}</div>
-                        <div class="font-bold text-white">${c.buildings[t]||0}</div>
-                    </button>`;
-                }
-                const el = document.createElement('div');
-                el.className = 'game-card p-4 rounded-xl space-y-3';
-                el.innerHTML = `<div class="font-bold text-white border-b border-slate-700 pb-2">${c.name}</div><div class="grid grid-cols-3 gap-2">${btns}</div>`;
-                list.appendChild(el);
+                let bHtml = '';
+                for(let k in BUILDING_STATS) bHtml += `<button onclick="window.build('${d.id}','${k}')" class="bg-slate-800 p-1 rounded border border-slate-700 hover:border-blue-500 text-left"><div class="text-[9px] text-slate-400 uppercase">${BUILDING_STATS[k].name}</div><div class="font-bold text-white text-xs">${c.buildings[k]||0}</div></button>`;
+                const div = document.createElement('div');
+                div.className = 'game-card p-3 rounded-xl space-y-2';
+                div.innerHTML = `<div class="font-bold text-white text-sm border-b border-slate-700 pb-1">${c.name}</div><div class="grid grid-cols-3 gap-1">${bHtml}</div>`;
+                list.appendChild(div);
             });
         }
-
         window.build = async (cid, type) => {
             const cost = BUILDING_STATS[type].cost;
-            if(currentNation.resources.money < cost) return toast(`Need $${formatNum(cost)}`, 'error');
+            if(nation.resources.money < cost) return toast(`Need $${fmt(cost)}`, 'error');
             try {
-                currentNation.resources.money -= cost; renderResources();
-                await updateDoc(doc(db, "nations", currentUser.uid), { "resources.money": increment(-cost) });
+                nation.resources.money -= cost; renderResources();
+                await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(-cost) });
                 await updateDoc(doc(db, "cities", cid), { [`buildings.${type}`]: increment(1) });
                 loadCities(); toast("Constructed!", 'success');
-            } catch(e) { toast(e.message, 'error'); }
+            } catch(e){ toast("Error", 'error'); }
         };
-        
-        document.getElementById('found-city-btn').onclick = async () => {
-             if(currentNation.resources.money < 50000) return toast("Need $50k", 'error');
-             const name = prompt("City Name:"); if(!name) return;
-             try {
-                currentNation.resources.money -= 50000; renderResources();
-                await updateDoc(doc(db, "nations", currentUser.uid), { "resources.money": increment(-50000) });
-                await addDoc(collection(db, "cities"), { nationId: currentUser.uid, name, buildings: { house: 5, farm: 1, steelMill: 0, bauxiteMine: 0, refinery: 0, ammoFactory: 0 } });
-                loadCities();
-             } catch(e) { toast(e.message, 'error'); }
+        el('found-city-btn').onclick = async () => {
+            if(nation.resources.money < 50000) return toast("Need $50k", 'error');
+            const n = prompt("City Name:"); if(!n) return;
+            nation.resources.money -= 50000; renderResources();
+            await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(-50000) });
+            await addDoc(collection(db, "cities"), { nationId: user.uid, name: n, buildings: {house:5,farm:1,steelMill:0,bauxiteMine:0,refinery:0,ammoFactory:0}});
+            loadCities(); logEvent(`${nation.name} founded ${n}`);
         };
 
+        // --- RECRUIT ---
         window.openRecruitModal = (type) => {
-            selectedRecruitType = type;
-            document.getElementById('recruit-type-name').innerText = type;
-            document.getElementById('recruit-modal').classList.remove('hidden');
-            let html = '';
-            for(let k in UNIT_STATS[type].cost) html += `<div class="flex justify-between"><span>${k}:</span><span>${UNIT_STATS[type].cost[k]}</span></div>`;
-            document.getElementById('recruit-cost-display').innerHTML = html;
+            recruitType = type; el('recruit-type-name').innerText = type;
+            let txt = ''; for(let k in UNIT_STATS[type].cost) txt += `${k}: ${UNIT_STATS[type].cost[k]}  `;
+            el('recruit-cost-display').innerText = txt;
+            el('recruit-modal').classList.remove('hidden');
         };
-
-        document.getElementById('confirm-recruit-btn').onclick = async () => {
-            const amt = parseInt(document.getElementById('recruit-amount').value);
-            const unit = UNIT_STATS[selectedRecruitType];
+        el('confirm-recruit-btn').onclick = async () => {
+            const amt = parseInt(el('recruit-amount').value);
+            const unit = UNIT_STATS[recruitType];
             const updates = {};
             for(let r in unit.cost) {
-                if(currentNation.resources[r] < unit.cost[r] * amt) return toast(`Missing ${r}`, 'error');
-                updates[`resources.${r}`] = increment(-(unit.cost[r] * amt));
+                if(nation.resources[r] < unit.cost[r]*amt) return toast(`Need more ${r}`, 'error');
+                updates[`resources.${r}`] = increment(-(unit.cost[r]*amt));
             }
-            updates[`military.${selectedRecruitType}`] = increment(amt);
-            await updateDoc(doc(db, "nations", currentUser.uid), updates);
-            for(let r in unit.cost) currentNation.resources[r] -= (unit.cost[r] * amt);
-            currentNation.military[selectedRecruitType] += amt;
-            renderResources();
-            document.getElementById('recruit-modal').classList.add('hidden');
-            toast(`Recruited ${amt} units`, 'success');
+            updates[`military.${recruitType}`] = increment(amt);
+            await updateDoc(doc(db, "nations", user.uid), updates);
+            for(let r in unit.cost) nation.resources[r] -= (unit.cost[r]*amt);
+            nation.military[recruitType] = (nation.military[recruitType]||0) + amt;
+            renderResources(); closeModals(); toast(`Recruited ${amt} ${recruitType}`, 'success');
         };
 
-        window.switchView = async (v) => {
-            ['dashboard','war','settings'].forEach(i=>hide('view-'+i)); show('view-'+v);
-            document.querySelectorAll('.nav-btn').forEach(b=>b.classList.replace('text-blue-500','text-slate-500'));
-            event.currentTarget.classList.replace('text-slate-500','text-blue-500');
-            
-            if(v === 'war') {
-                const list = document.getElementById('enemy-list');
-                const snaps = await getDocs(query(collection(db, "nations"), limit(10)));
-                list.innerHTML = '';
-                snaps.forEach(d => {
-                    if(d.id === currentUser.uid) return;
-                    const e = d.data();
-                    const el = document.createElement('div');
-                    el.className = 'bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center';
-                    el.innerHTML = `<div class="flex items-center gap-3"><img src="${e.flag}" class="w-12 h-8 object-cover rounded shadow"><div><div class="font-bold text-white">${e.name}</div><div class="text-xs text-slate-400">${e.leader}</div></div></div><button onclick="window.attack('${d.id}')" class="bg-red-600 px-4 py-2 rounded font-bold text-xs text-white shadow-lg">ATTACK</button>`;
-                    list.appendChild(el);
-                });
-            }
+        // --- WAR ---
+        async function loadWar() {
+            const list = el('enemy-list'); list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
+            const snaps = await getDocs(query(collection(db, "nations"), limit(10)));
+            list.innerHTML = '';
+            snaps.forEach(d => {
+                if(d.id === user.uid) return;
+                const e = d.data();
+                const div = document.createElement('div');
+                div.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${e.flag}" class="w-10 h-6 rounded object-cover bg-black">
+                        <div><div class="font-bold text-white text-sm">${e.name}</div><div class="text-[10px] text-slate-400">Soldiers: ~${e.military?.soldiers||0}</div></div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="window.spy('${d.id}')" class="bg-amber-600 p-2 rounded text-[10px] font-bold text-white">SPY</button>
+                        <button onclick="window.attack('${d.id}')" class="bg-red-600 p-2 rounded text-[10px] font-bold text-white">ATTACK</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+        window.spy = async (tid) => {
+            if(nation.resources.money < 2000) return toast("Spy op costs $2,000", 'error');
+            const snap = await getDoc(doc(db, "nations", tid));
+            const e = snap.data();
+            alert(`SPY REPORT on ${e.name}:\nMoney: ${fmt(e.resources.money)}\nSoldiers: ${e.military.soldiers}\nTanks: ${e.military.tanks}\nJets: ${e.military.aircraft}`);
         };
-
         window.attack = async (tid) => {
-            if(!confirm("Declare War?")) return;
-            show('loading-screen');
+            if(!confirm("Declare WAR?")) return;
             try {
                 await runTransaction(db, async (t) => {
-                    const me = (await t.get(doc(db,"nations",currentUser.uid))).data();
+                    const me = (await t.get(doc(db,"nations",user.uid))).data();
                     const en = (await t.get(doc(db,"nations",tid))).data();
-                    const myS = (me.military.soldiers) + (me.military.tanks*10); 
-                    const enS = (en.military.soldiers) + (en.military.tanks*10);
+                    const myS = (me.military.soldiers) + (me.military.tanks*10) + (me.military.aircraft*20);
+                    const enS = (en.military.soldiers) + (en.military.tanks*10) + (en.military.aircraft*20);
                     
                     if(myS * (0.9+Math.random()*0.2) > enS * (0.9+Math.random()*0.2)) {
-                        const loot = Math.floor(en.resources.money * 0.15);
-                        t.update(doc(db,"nations",currentUser.uid), { "resources.money": increment(loot), "military.soldiers": Math.floor(me.military.soldiers*0.95) });
+                        const loot = Math.floor(en.resources.money * 0.2);
+                        t.update(doc(db,"nations",user.uid), { "resources.money": increment(loot), "military.soldiers": Math.floor(me.military.soldiers*0.95) });
                         t.update(doc(db,"nations",tid), { "resources.money": increment(-loot), "military.soldiers": Math.floor(en.military.soldiers*0.8) });
+                        logEvent(`${me.name} defeated ${en.name} and looted $${fmt(loot)}`);
                         return {win:true, loot};
                     } else {
-                        t.update(doc(db,"nations",currentUser.uid), { "military.soldiers": Math.floor(me.military.soldiers*0.85) });
+                        t.update(doc(db,"nations",user.uid), { "military.soldiers": Math.floor(me.military.soldiers*0.8) });
+                        logEvent(`${me.name} failed to invade ${en.name}`);
                         return {win:false};
                     }
-                }).then(res => {
-                    hide('loading-screen');
-                    toast(res.win ? `VICTORY! Looted $${formatNum(res.loot)}` : "DEFEAT", res.win?'success':'error');
-                    loadGame();
-                });
-            } catch(e) { hide('loading-screen'); toast("Attack Failed", 'error'); }
+                }).then(res => toast(res.win ? `VICTORY! +$${fmt(res.loot)}` : "DEFEAT", res.win?'success':'error'));
+            } catch(e) { toast("Attack Failed", 'error'); }
         };
+
+        // --- MARKET ---
+        async function loadMarket() {
+            const list = el('market-list'); list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
+            const snaps = await getDocs(query(collection(db, "market"), orderBy("price"), limit(20)));
+            list.innerHTML = '';
+            snaps.forEach(d => {
+                const o = d.data();
+                const div = document.createElement('div');
+                div.className = 'game-card p-3 rounded flex justify-between items-center';
+                div.innerHTML = `<div><div class="font-bold text-white text-sm">${o.amount} ${o.resource.toUpperCase()}</div><div class="text-[10px] text-slate-400">Seller: ${o.sellerName}</div></div>
+                <button onclick="window.buy('${d.id}')" class="btn-green px-3 py-1 rounded text-xs font-bold text-white">$${fmt(o.price)}</button>`;
+                list.appendChild(div);
+            });
+            if(list.innerHTML=='') list.innerHTML = '<div class="text-center text-slate-500 text-xs">Market empty. Be the first to sell!</div>';
+        }
+        window.postTrade = async () => {
+            const res = el('sell-resource').value;
+            const amt = parseInt(el('sell-amount').value);
+            const price = parseInt(el('sell-price').value);
+            if(nation.resources[res] < amt) return toast(`Not enough ${res}`, 'error');
+            
+            await addDoc(collection(db, "market"), { sellerId: user.uid, sellerName: nation.name, resource: res, amount: amt, price, timestamp: serverTimestamp() });
+            await updateDoc(doc(db, "nations", user.uid), { [`resources.${res}`]: increment(-amt) });
+            nation.resources[res] -= amt; renderResources();
+            closeModals(); loadMarket(); toast("Offer Listed", 'success');
+        };
+        window.buy = async (oid) => {
+            try {
+                await runTransaction(db, async (t) => {
+                    const offerRef = doc(db, "market", oid);
+                    const offer = (await t.get(offerRef)).data();
+                    const me = (await t.get(doc(db, "nations", user.uid))).data();
+                    
+                    if(!offer) throw "Sold!";
+                    if(me.resources.money < offer.price) throw "Too expensive";
+                    
+                    t.update(doc(db, "nations", user.uid), { "resources.money": increment(-offer.price), [`resources.${offer.resource}`]: increment(offer.amount) });
+                    t.update(doc(db, "nations", offer.sellerId), { "resources.money": increment(offer.price) });
+                    t.delete(offerRef);
+                });
+                loadMarket(); toast("Purchased!", 'success');
+                nation.resources.money -= offer.price; renderResources(); // Rough local update
+            } catch(e) { toast(e.toString(), 'error'); loadMarket(); }
+        };
+
+        // --- ALLIANCE ---
+        async function loadAlliance() {
+            if(nation.allianceId) {
+                const snap = await getDoc(doc(db, "alliances", nation.allianceId));
+                if(snap.exists()) {
+                    alliance = snap.data(); alliance.id = snap.id;
+                    el('nav-alliance-tag').innerText = alliance.name;
+                    el('alliance-name-display').innerText = alliance.name;
+                    el('alliance-bank').innerText = `$${fmt(alliance.bank)}`;
+                    el('no-alliance-ui').classList.add('hidden');
+                    el('alliance-ui').classList.remove('hidden');
+                    
+                    // Members
+                    el('alliance-members-list').innerHTML = alliance.members.map(m => `<div class="bg-slate-800 p-2 rounded text-xs text-white">${m.name}</div>`).join('');
+                }
+            }
+        }
+        window.createAlliancePrompt = async () => {
+            const name = prompt("Alliance Name:"); if(!name) return;
+            if(nation.resources.money < 10000) return toast("Need $10k to form alliance", 'error');
+            const ref = await addDoc(collection(db, "alliances"), { name, leader: user.uid, bank: 0, members: [{uid: user.uid, name: nation.name}] });
+            await updateDoc(doc(db, "nations", user.uid), { allianceId: ref.id, "resources.money": increment(-10000) });
+            location.reload();
+        };
+        window.loadAlliancesList = async () => {
+            const list = el('join-alliance-list'); list.innerHTML = 'Loading...';
+            const snaps = await getDocs(query(collection(db, "alliances"), limit(5)));
+            list.innerHTML = '';
+            snaps.forEach(d => {
+                const a = d.data();
+                const btn = document.createElement('button');
+                btn.className = 'w-full bg-slate-800 p-2 rounded mb-2 text-white text-xs flex justify-between';
+                btn.innerHTML = `<span>${a.name}</span> <span>JOIN</span>`;
+                btn.onclick = async () => {
+                    await updateDoc(doc(db, "alliances", d.id), { members: arrayUnion({uid: user.uid, name: nation.name}) });
+                    await updateDoc(doc(db, "nations", user.uid), { allianceId: d.id });
+                    location.reload();
+                };
+                list.appendChild(btn);
+            });
+        };
+        window.depositToBank = async () => {
+            if(nation.resources.money < 10000) return toast("Need $10k", 'error');
+            await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(-10000) });
+            await updateDoc(doc(db, "alliances", nation.allianceId), { bank: increment(10000) });
+            nation.resources.money -= 10000; renderResources();
+            el('alliance-bank').innerText = `$${fmt(alliance.bank + 10000)}`; alliance.bank += 10000;
+            toast("Deposited", 'success');
+        };
+
+        // --- NEWS ---
+        async function loadNews() {
+            const list = el('news-feed');
+            const snaps = await getDocs(query(collection(db, "events"), orderBy("timestamp", "desc"), limit(10)));
+            list.innerHTML = '';
+            snaps.forEach(d => {
+                const e = d.data();
+                const div = document.createElement('div');
+                div.className = 'text-slate-300 border-b border-slate-800 pb-1';
+                div.innerHTML = `<span class="text-slate-500">[${e.timestamp?.toDate().toLocaleTimeString()||'Now'}]</span> ${e.text}`;
+                list.appendChild(div);
+            });
+        }
+        async function logEvent(text) {
+            await addDoc(collection(db, "events"), { text, timestamp: serverTimestamp() });
+        }
+
+        // --- MISC ---
+        async function calcOffline() {
+            // ... (Simplified version of previous offline logic) ... 
+            // Just basic income to keep code small
+            const now = new Date();
+            const last = nation.lastCollection?.toDate() || now;
+            const mins = Math.min(Math.floor((now - last) / 60000), 1440);
+            if (mins > 5) {
+                const inc = mins * 100; // Base income
+                await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(inc), lastCollection: serverTimestamp() });
+                nation.resources.money += inc;
+                toast(`Offline Income: $${fmt(inc)}`, 'success');
+            }
+        }
+
+        el('flag-upload').onchange = async (e) => {
+            const f = e.target.files[0];
+            if(f) {
+                uploadedFlag = await compress(f);
+                el('flag-preview').src = uploadedFlag;
+                el('flag-preview').classList.remove('hidden');
+            }
+        };
+
+        // Create Nation
+        el('create-nation-btn').onclick = async () => {
+            const name = el('new-nation-name').value;
+            const leader = el('new-leader-name').value;
+            if(!name) return toast("Name required", 'error');
+            await setDoc(doc(db, "nations", user.uid), {
+                name, leader, flag: uploadedFlag || 'https://lucide.dev/icon.svg',
+                resources: { money: 50000, food: 1000, steel: 100, aluminum: 0, gasoline: 0, munitions: 100 },
+                military: { soldiers: 20 }, stats: { population: 1000 },
+                lastCollection: serverTimestamp()
+            });
+            await addDoc(collection(db, "cities"), { nationId: user.uid, name: "Capital", buildings: {house:5,farm:1,steelMill:0,bauxiteMine:0,refinery:0,ammoFactory:0} });
+            logEvent(`New nation ${name} established!`);
+            location.reload();
+        };
+
+        // Navigation
+        window.switchView = (v) => {
+            ['dashboard','war','market','alliance','news'].forEach(id => el('view-'+id).classList.add('hidden'));
+            el('view-'+v).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('text-blue-500'));
+            event.currentTarget.classList.add('text-blue-500');
+            if(v=='war') loadWar();
+            if(v=='market') loadMarket();
+            if(v=='alliance') loadAlliance();
+            if(v=='news') loadNews();
+        };
+
     </script>
 </body>
 </html>
+
+Setup Requirements for New Features
+Because we added new features (Trade, Alliances, News), you need to update your Firestore Security Rules in the Firebase Console to allow these new collections.
+Copy and paste this into Firestore Database > Rules:
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default: Authenticated users can read/write everything (Simplest for this game type)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
 
 
