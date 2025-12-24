@@ -5,45 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OpenNations: World Conflict</title>
     
-    <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         body { background-color: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* Glassmorphism UI */
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .game-card { background: #1e293b; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        
-        /* Buttons */
         .btn-primary { background: linear-gradient(to bottom, #3b82f6, #2563eb); border-top: 1px solid #60a5fa; transition: transform 0.1s; }
         .btn-primary:active { transform: translateY(2px); }
         .btn-danger { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
-        .btn-danger:active { transform: translateY(2px); }
         .btn-success { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
-
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
-        
-        /* Animations */
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); } 50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); } }
-        .animate-glow { animation: pulse-glow 2s infinite; }
         .toast { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col select-none">
 
-    <!-- TOAST NOTIFICATIONS -->
     <div id="toast-container" class="fixed top-16 left-0 right-0 z-[60] flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <!-- LOADING OVERLAY -->
@@ -52,43 +35,57 @@
             <div class="absolute inset-0 border-4 border-blue-500/30 rounded-full"></div>
             <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
-        <h2 class="text-xl font-bold tracking-[0.2em] text-blue-400">ESTABLISHING LINK...</h2>
+        <h2 class="text-xl font-bold tracking-[0.2em] text-blue-400">CONNECTING...</h2>
     </div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden fixed inset-0 z-40 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center">
         <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center p-6">
             <div class="text-center mb-10">
-                <i data-lucide="globe-2" class="w-20 h-20 text-blue-500 mx-auto mb-4 animate-glow rounded-full"></i>
+                <i data-lucide="globe-2" class="w-20 h-20 text-blue-500 mx-auto mb-4 rounded-full shadow-lg shadow-blue-500/50"></i>
                 <h1 class="text-5xl font-black text-white tracking-tighter mb-2">OPEN<span class="text-blue-500">NATIONS</span></h1>
-                <p class="text-slate-400 font-mono text-sm uppercase tracking-widest">Build • Produce • Conquer</p>
             </div>
-            <button id="login-btn" class="btn-primary w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-2xl flex items-center justify-center gap-3 group">
-                <i data-lucide="log-in" class="group-hover:translate-x-1 transition"></i> Initialize Regime
+            <button id="login-btn" class="btn-primary w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-2xl flex items-center justify-center gap-3">
+                <i data-lucide="log-in"></i> Initialize Regime
             </button>
         </div>
     </div>
 
-    <!-- CREATE NATION -->
-    <div id="create-screen" class="hidden fixed inset-0 z-40 bg-slate-900 p-6 flex items-center justify-center">
-        <div class="w-full max-w-md bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl">
+    <!-- CREATE NATION SCREEN -->
+    <div id="create-screen" class="hidden fixed inset-0 z-40 bg-slate-900 p-6 flex items-center justify-center overflow-y-auto">
+        <div class="w-full max-w-md bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl my-auto">
             <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                 <i data-lucide="flag" class="text-blue-500"></i> Found New Nation
             </h2>
             <div class="space-y-4">
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase">Nation Name</label>
-                    <input type="text" id="new-nation-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="Republic of...">
+                    <input type="text" id="new-nation-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="Republic of...">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase">Leader Name</label>
-                    <input type="text" id="new-leader-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition" placeholder="President...">
+                    <input type="text" id="new-leader-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="President...">
                 </div>
+                
+                <!-- NEW: FILE UPLOAD SECTION -->
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase">Flag URL</label>
-                    <input type="text" id="new-nation-flag" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition" placeholder="https://...">
+                    <label class="text-xs font-bold text-slate-400 uppercase">National Flag (Upload)</label>
+                    <div class="mt-2 flex items-center gap-4">
+                        <div class="relative w-16 h-12 bg-slate-900 rounded border border-slate-700 overflow-hidden flex-shrink-0">
+                            <img id="flag-preview" class="w-full h-full object-cover hidden">
+                            <div id="flag-placeholder" class="absolute inset-0 flex items-center justify-center text-slate-600">
+                                <i data-lucide="image"></i>
+                            </div>
+                        </div>
+                        <label class="cursor-pointer btn-primary px-4 py-2 rounded text-sm font-bold flex-1 text-center">
+                            Select Image
+                            <input type="file" id="flag-upload" accept="image/*" class="hidden">
+                        </label>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">Images are automatically resized to save data.</p>
                 </div>
-                <button id="create-nation-btn" class="btn-success w-full py-4 rounded-lg font-bold text-white shadow-lg mt-4">Declaration of Independence</button>
+
+                <button id="create-nation-btn" class="btn-success w-full py-4 rounded-lg font-bold text-white shadow-lg mt-4">Establish Nation</button>
             </div>
         </div>
     </div>
@@ -96,7 +93,7 @@
     <!-- MAIN GAME UI -->
     <div id="game-ui" class="hidden flex-1 flex flex-col h-full relative bg-slate-900">
         
-        <!-- RESOURCE BAR (Scrollable) -->
+        <!-- HEADER -->
         <header class="glass-panel z-20 border-b border-slate-700 shadow-lg">
             <div class="px-3 py-2 flex justify-between items-center bg-slate-900/50">
                 <div class="flex items-center gap-2">
@@ -111,61 +108,45 @@
                 <div class="text-xs font-mono text-slate-400">Day <span id="game-day">1</span></div>
             </div>
             
-            <!-- Resources Scroller -->
+            <!-- SCROLLABLE RESOURCES -->
             <div class="flex overflow-x-auto py-2 px-2 gap-4 bg-slate-950/50 hide-scrollbar border-t border-slate-800">
                 <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Money</span>
-                    <span class="font-bold text-emerald-400 flex items-center gap-1">
-                        $ <span id="res-money">0</span>
-                    </span>
+                    <span class="text-[10px] text-slate-400 uppercase">Money</span>
+                    <span class="font-bold text-emerald-400">$<span id="res-money">0</span></span>
                 </div>
                 <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Food</span>
-                    <span class="font-bold text-orange-300 flex items-center gap-1">
-                        <i data-lucide="wheat" size="10"></i> <span id="res-food">0</span>
-                    </span>
+                    <span class="text-[10px] text-slate-400 uppercase">Food</span>
+                    <span class="font-bold text-orange-300"><span id="res-food">0</span></span>
                 </div>
                 <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Steel</span>
-                    <span class="font-bold text-slate-300 flex items-center gap-1">
-                        <i data-lucide="anvil" size="10"></i> <span id="res-steel">0</span>
-                    </span>
+                    <span class="text-[10px] text-slate-400 uppercase">Steel</span>
+                    <span class="font-bold text-slate-300"><span id="res-steel">0</span></span>
                 </div>
                 <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Alum.</span>
-                    <span class="font-bold text-slate-400 flex items-center gap-1">
-                        <i data-lucide="layers" size="10"></i> <span id="res-aluminum">0</span>
-                    </span>
+                    <span class="text-[10px] text-slate-400 uppercase">Alum.</span>
+                    <span class="font-bold text-slate-400"><span id="res-aluminum">0</span></span>
                 </div>
                 <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Gas</span>
-                    <span class="font-bold text-purple-400 flex items-center gap-1">
-                        <i data-lucide="droplet" size="10"></i> <span id="res-gasoline">0</span>
-                    </span>
+                    <span class="text-[10px] text-slate-400 uppercase">Gas</span>
+                    <span class="font-bold text-purple-400"><span id="res-gasoline">0</span></span>
                 </div>
                 <div class="flex flex-col items-center min-w-[60px]">
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Ammo</span>
-                    <span class="font-bold text-red-400 flex items-center gap-1">
-                        <i data-lucide="crosshair" size="10"></i> <span id="res-munitions">0</span>
-                    </span>
+                    <span class="text-[10px] text-slate-400 uppercase">Ammo</span>
+                    <span class="font-bold text-red-400"><span id="res-munitions">0</span></span>
                 </div>
             </div>
         </header>
 
-        <!-- CONTENT AREA -->
+        <!-- MAIN SCROLL AREA -->
         <main class="flex-1 overflow-y-auto pb-24 relative" id="main-scroll">
             
-            <!-- DASHBOARD VIEW -->
+            <!-- DASHBOARD -->
             <div id="view-dashboard" class="p-4 space-y-6">
-                <!-- National Profile -->
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700 shadow-xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <i data-lucide="landmark" size="100"></i>
-                    </div>
+                    <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="landmark" size="100"></i></div>
                     <div class="relative z-10">
                         <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">State of the Nation</h2>
-                        <div class="text-3xl font-black text-white mb-4" id="dash-nation-name">Loading...</div>
-                        
+                        <div class="text-3xl font-black text-white mb-4" id="dash-nation-name">...</div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800">
                                 <div class="text-xs text-slate-500 uppercase">Leader</div>
@@ -179,42 +160,30 @@
                     </div>
                 </div>
 
-                <!-- Military Overview -->
+                <!-- MILITARY -->
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase mb-3 ml-1">Military Assets</h3>
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="openRecruitModal('soldiers')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div>
-                                <div class="text-xs text-slate-400">Soldiers</div>
-                                <div class="font-bold text-lg text-white" id="mil-soldiers">0</div>
-                            </div>
+                            <div><div class="text-xs text-slate-400">Soldiers</div><div class="font-bold text-lg text-white" id="mil-soldiers">0</div></div>
                             <i data-lucide="users" class="text-emerald-500"></i>
                         </button>
                         <button onclick="openRecruitModal('tanks')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div>
-                                <div class="text-xs text-slate-400">Tanks</div>
-                                <div class="font-bold text-lg text-white" id="mil-tanks">0</div>
-                            </div>
+                            <div><div class="text-xs text-slate-400">Tanks</div><div class="font-bold text-lg text-white" id="mil-tanks">0</div></div>
                             <i data-lucide="shield" class="text-blue-500"></i>
                         </button>
                         <button onclick="openRecruitModal('aircraft')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div>
-                                <div class="text-xs text-slate-400">Aircraft</div>
-                                <div class="font-bold text-lg text-white" id="mil-aircraft">0</div>
-                            </div>
+                            <div><div class="text-xs text-slate-400">Aircraft</div><div class="font-bold text-lg text-white" id="mil-aircraft">0</div></div>
                             <i data-lucide="plane" class="text-purple-500"></i>
                         </button>
                         <button onclick="openRecruitModal('ships')" class="game-card p-3 rounded-lg flex items-center justify-between hover:bg-slate-700 transition">
-                            <div>
-                                <div class="text-xs text-slate-400">Ships</div>
-                                <div class="font-bold text-lg text-white" id="mil-ships">0</div>
-                            </div>
+                            <div><div class="text-xs text-slate-400">Ships</div><div class="font-bold text-lg text-white" id="mil-ships">0</div></div>
                             <i data-lucide="anchor" class="text-orange-500"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Cities Manager -->
+                <!-- CITIES -->
                 <div>
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xs font-bold text-slate-500 uppercase ml-1">Territories</h3>
@@ -222,13 +191,11 @@
                             <i data-lucide="plus" size="10"></i> FOUND CITY ($50k)
                         </button>
                     </div>
-                    <div id="cities-list" class="space-y-4">
-                        <!-- City Cards injected here -->
-                    </div>
+                    <div id="cities-list" class="space-y-4"></div>
                 </div>
             </div>
 
-            <!-- WAR ROOM VIEW -->
+            <!-- WAR ROOM -->
             <div id="view-war" class="hidden p-4 space-y-4">
                 <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl mb-6">
                     <h2 class="text-red-500 font-bold text-lg flex items-center gap-2">
@@ -236,70 +203,56 @@
                     </h2>
                     <p class="text-xs text-red-200/60 mt-1">Select a target. Ensure your military score exceeds theirs to guarantee victory and loot resources.</p>
                 </div>
-                
                 <div id="enemy-list" class="space-y-3">
-                    <!-- Enemies injected here -->
                     <div class="flex justify-center p-8"><i class="animate-spin text-slate-600" data-lucide="radar"></i></div>
                 </div>
             </div>
             
-            <!-- SETTINGS VIEW -->
+            <!-- SETTINGS -->
             <div id="view-settings" class="hidden p-4">
                 <button id="logout-btn" class="w-full btn-danger p-4 rounded-lg font-bold">Log Out</button>
             </div>
 
         </main>
 
-        <!-- BOTTOM NAV -->
+        <!-- NAV BAR -->
         <nav class="absolute bottom-0 w-full glass-panel border-t border-slate-700 pb-safe pt-2 px-2 flex justify-around items-center z-30">
             <button onclick="switchView('dashboard')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-blue-500">
-                <i data-lucide="layout-dashboard" class="group-hover:scale-110 transition"></i>
-                <span class="text-[9px] font-bold uppercase tracking-widest">Nation</span>
+                <i data-lucide="layout-dashboard" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">Nation</span>
             </button>
             <button onclick="switchView('war')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-slate-500">
-                <i data-lucide="sword" class="group-hover:scale-110 transition"></i>
-                <span class="text-[9px] font-bold uppercase tracking-widest">War</span>
+                <i data-lucide="sword" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">War</span>
             </button>
              <button onclick="switchView('settings')" class="nav-btn group flex flex-col items-center gap-1 p-2 w-16 text-slate-500">
-                <i data-lucide="settings" class="group-hover:scale-110 transition"></i>
-                <span class="text-[9px] font-bold uppercase tracking-widest">Menu</span>
+                <i data-lucide="settings" class="group-hover:scale-110 transition"></i><span class="text-[9px] font-bold uppercase tracking-widest">Menu</span>
             </button>
         </nav>
 
-        <!-- RECRUITMENT MODAL -->
+        <!-- RECRUIT MODAL -->
         <div id="recruit-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center sm:p-4">
             <div class="bg-slate-800 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 border-t sm:border border-slate-700 shadow-2xl animate-slide-up">
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i data-lucide="users"></i> Recruit <span id="recruit-type-name" class="capitalize">Units</span>
-                    </h3>
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="users"></i> Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
                     <button onclick="document.getElementById('recruit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
                 </div>
-                
                 <div class="bg-slate-900 p-4 rounded-lg mb-6 text-sm space-y-2">
                     <div class="flex justify-between text-slate-400"><span>Cost per unit:</span></div>
-                    <div id="recruit-cost-display" class="grid grid-cols-2 gap-2 font-mono text-white font-bold">
-                        <!-- Costs injected here -->
-                    </div>
+                    <div id="recruit-cost-display" class="grid grid-cols-2 gap-2 font-mono text-white font-bold"></div>
                 </div>
-
                 <div class="flex gap-2">
                     <input type="number" id="recruit-amount" value="10" min="1" class="bg-slate-900 border border-slate-600 text-center text-white font-bold rounded-lg w-20 outline-none focus:border-blue-500">
                     <button id="confirm-recruit-btn" class="flex-1 btn-primary py-3 rounded-lg font-bold">PURCHASE</button>
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- LOGIC SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- FIREBASE CONFIG (PASTE YOURS HERE) ---
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
             apiKey: "AIzaSyBHqPKczjs451HSI9NnRDKM7hXtWOwu0f4",
             authDomain: "opennations-b73bd.firebaseapp.com",
@@ -314,28 +267,29 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- GAME CONSTANTS ---
+        // --- CONSTANTS ---
         const UNIT_STATS = {
-            soldiers: { cost: { money: 100, food: 5, munitions: 1 }, power: 1 },
-            tanks:    { cost: { money: 500, steel: 10, munitions: 5 }, power: 10 },
-            aircraft: { cost: { money: 2000, aluminum: 15, gasoline: 10, munitions: 10 }, power: 25 },
-            ships:    { cost: { money: 5000, steel: 50, gasoline: 20, munitions: 20 }, power: 60 }
+            soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
+            tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
+            aircraft: { cost: { money: 2000, aluminum: 15, gasoline: 10, munitions: 10 } },
+            ships:    { cost: { money: 5000, steel: 50, gasoline: 20, munitions: 20 } }
         };
 
         const BUILDING_STATS = {
-            farm:           { name: "Farm",             cost: 1000,  output: { res: "food", amount: 10 } },
-            steelMill:      { name: "Steel Mill",       cost: 2500,  output: { res: "steel", amount: 5 } },
-            bauxiteMine:    { name: "Bauxite Mine",     cost: 3000,  output: { res: "aluminum", amount: 4 } },
-            refinery:       { name: "Oil Refinery",     cost: 3500,  output: { res: "gasoline", amount: 4 } },
-            ammoFactory:    { name: "Ammo Factory",     cost: 5000,  output: { res: "munitions", amount: 5 } },
-            house:          { name: "Housing Project",  cost: 500,   output: { res: "money", amount: 50 } } // Tax revenue
+            farm:           { name: "Farm",             cost: 1000 },
+            steelMill:      { name: "Steel Mill",       cost: 2500 },
+            bauxiteMine:    { name: "Bauxite Mine",     cost: 3000 },
+            refinery:       { name: "Oil Refinery",     cost: 3500 },
+            ammoFactory:    { name: "Ammo Factory",     cost: 5000 },
+            house:          { name: "Housing Project",  cost: 500 }
         };
 
         let currentUser = null;
         let currentNation = null;
         let selectedRecruitType = null;
+        let uploadedFlagBase64 = null; // Store image string
 
-        // --- UI HELPERS ---
+        // --- HELPERS ---
         const formatNum = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
         const show = (id) => document.getElementById(id).classList.remove('hidden');
         const hide = (id) => document.getElementById(id).classList.add('hidden');
@@ -351,6 +305,49 @@
             setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 300); }, 3000);
         };
 
+        // --- IMAGE COMPRESSION LOGIC (MAGIC SAUCE) ---
+        const compressImage = (file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        // MAX SIZE: 200x200px (Very small, perfect for free db)
+                        const MAX = 200;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX) { height *= MAX / width; width = MAX; }
+                        } else {
+                            if (height > MAX) { width *= MAX / height; height = MAX; }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // Convert to JPEG at 70% quality
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                };
+            });
+        };
+
+        // Handle File Input
+        document.getElementById('flag-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                uploadedFlagBase64 = await compressImage(file);
+                // Show preview
+                document.getElementById('flag-preview').src = uploadedFlagBase64;
+                document.getElementById('flag-preview').classList.remove('hidden');
+                document.getElementById('flag-placeholder').classList.add('hidden');
+            }
+        });
+
         // --- AUTH ---
         onAuthStateChanged(auth, async (user) => {
             hide('loading-screen');
@@ -365,7 +362,7 @@
         document.getElementById('login-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => toast(e.message, 'error'));
         document.getElementById('logout-btn').onclick = () => { signOut(auth); location.reload(); };
 
-        // --- CORE GAME LOOP ---
+        // --- LOAD GAME ---
         async function loadGame() {
             show('loading-screen');
             const nationRef = doc(db, "nations", currentUser.uid);
@@ -373,7 +370,7 @@
 
             if (snap.exists()) {
                 currentNation = snap.data();
-                await calculateOfflineProduction(nationRef, currentNation);
+                await calculateOffline(nationRef, currentNation);
                 initUI();
             } else {
                 hide('loading-screen');
@@ -381,12 +378,14 @@
             }
         }
 
-        // --- CREATION ---
+        // --- CREATE NATION (UPDATED) ---
         document.getElementById('create-nation-btn').onclick = async () => {
             const name = document.getElementById('new-nation-name').value;
             const leader = document.getElementById('new-leader-name').value;
-            const flag = document.getElementById('new-nation-flag').value || 'https://lucide.dev/icon.svg';
-            if(!name || !leader) return toast("All fields required", 'error');
+            // Use uploaded flag OR default if none selected
+            const flag = uploadedFlagBase64 || 'https://lucide.dev/icon.svg';
+
+            if(!name || !leader) return toast("Name & Leader required", 'error');
 
             show('loading-screen');
             try {
@@ -398,311 +397,184 @@
                     lastCollection: serverTimestamp()
                 });
                 await addDoc(collection(db, "cities"), {
-                    nationId: currentUser.uid,
-                    name: "Capital City",
+                    nationId: currentUser.uid, name: "Capital",
                     buildings: { house: 10, farm: 2, steelMill: 1, bauxiteMine: 0, refinery: 0, ammoFactory: 1 }
                 });
                 location.reload();
             } catch(e) { hide('loading-screen'); toast(e.message, 'error'); }
         };
 
-        // --- OFFLINE CALC ---
-        async function calculateOfflineProduction(ref, data) {
-            // In a real app, use Cloud Functions. Here we estimate based on last login.
+        // --- OFFLINE LOGIC ---
+        async function calculateOffline(ref, data) {
             const now = new Date();
             const last = data.lastCollection?.toDate() || now;
-            const diffMinutes = Math.floor((now - last) / 60000);
+            const mins = Math.min(Math.floor((now - last) / 60000), 1440); // Cap 24h
 
-            if (diffMinutes > 1) {
-                // Get building counts
+            if (mins > 1) {
                 const citiesQ = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
-                const citiesSnap = await getDocs(citiesQ);
+                const snaps = await getDocs(citiesQ);
+                let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
                 
-                let production = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
-                
-                citiesSnap.forEach(doc => {
-                    const b = doc.data().buildings;
-                    if(b.house) production.money += b.house * BUILDING_STATS.house.output.amount;
-                    if(b.farm) production.food += b.farm * BUILDING_STATS.farm.output.amount;
-                    if(b.steelMill) production.steel += b.steelMill * BUILDING_STATS.steelMill.output.amount;
-                    if(b.bauxiteMine) production.aluminum += b.bauxiteMine * BUILDING_STATS.bauxiteMine.output.amount;
-                    if(b.refinery) production.gasoline += b.refinery * BUILDING_STATS.refinery.output.amount;
-                    if(b.ammoFactory) production.munitions += b.ammoFactory * BUILDING_STATS.ammoFactory.output.amount;
+                snaps.forEach(d => {
+                    const b = d.data().buildings;
+                    if(b.house) prod.money += b.house * 50;
+                    if(b.farm) prod.food += b.farm * 10;
+                    if(b.steelMill) prod.steel += b.steelMill * 5;
+                    if(b.bauxiteMine) prod.aluminum += b.bauxiteMine * 4;
+                    if(b.refinery) prod.gasoline += b.refinery * 4;
+                    if(b.ammoFactory) prod.munitions += b.ammoFactory * 5;
                 });
 
-                // Apply time multiplier (Max 24 hours to prevent overflow/exploits)
-                const minutesCapped = Math.min(diffMinutes, 1440);
-                
-                // Update DB
                 const updates = { lastCollection: serverTimestamp() };
-                for (const [key, val] of Object.entries(production)) {
-                    const total = val * minutesCapped;
-                    updates[`resources.${key}`] = increment(total);
-                    currentNation.resources[key] += total; // Local update
+                for(let k in prod) {
+                    updates[`resources.${k}`] = increment(prod[k] * mins);
+                    currentNation.resources[k] += (prod[k] * mins);
                 }
-                
                 await updateDoc(ref, updates);
-                toast(`Offline for ${minutesCapped}m. Resources produced!`, 'success');
+                toast(`Offline for ${mins}m: Resources updated!`, 'success');
             }
         }
 
-        // --- UI RENDERING ---
+        // --- UI ---
         function initUI() {
-            hide('loading-screen');
-            hide('create-screen');
-            show('game-ui');
-            lucide.createIcons();
-
-            // Header
+            hide('loading-screen'); show('game-ui'); lucide.createIcons();
             document.getElementById('nav-nation-name').innerText = currentNation.name;
             document.getElementById('nav-flag').src = currentNation.flag;
             document.getElementById('dash-nation-name').innerText = currentNation.name;
             document.getElementById('dash-leader').innerText = currentNation.leader;
             document.getElementById('dash-pop').innerText = formatNum(currentNation.stats.population);
-
             renderResources();
             loadCities();
-            
-            // Auto-refresh resources visually (fake increment)
-            setInterval(() => {
-                // We could do visual increments here
-            }, 1000);
         }
 
         function renderResources() {
             const r = currentNation.resources;
             const m = currentNation.military;
-            
-            document.getElementById('res-money').innerText = formatNum(r.money);
-            document.getElementById('res-food').innerText = formatNum(r.food);
-            document.getElementById('res-steel').innerText = formatNum(r.steel);
-            document.getElementById('res-aluminum').innerText = formatNum(r.aluminum);
-            document.getElementById('res-gasoline').innerText = formatNum(r.gasoline);
-            document.getElementById('res-munitions').innerText = formatNum(r.munitions);
-            
-            document.getElementById('mil-soldiers').innerText = formatNum(m.soldiers);
-            document.getElementById('mil-tanks').innerText = formatNum(m.tanks);
-            document.getElementById('mil-aircraft').innerText = formatNum(m.aircraft);
-            document.getElementById('mil-ships').innerText = formatNum(m.ships);
+            for(let k in r) document.getElementById(`res-${k}`).innerText = formatNum(r[k]);
+            for(let k in m) document.getElementById(`mil-${k}`).innerText = formatNum(m[k]);
         }
 
-        // --- CITIES & INFRASTRUCTURE ---
         async function loadCities() {
             const list = document.getElementById('cities-list');
             const q = query(collection(db, "cities"), where("nationId", "==", currentUser.uid));
             const snaps = await getDocs(q);
-            
             list.innerHTML = '';
-            snaps.forEach(cityDoc => {
-                const city = cityDoc.data();
-                const cid = cityDoc.id;
-                
-                // Build HTML for building buttons
-                let buttonsHtml = '';
-                for (const [type, data] of Object.entries(BUILDING_STATS)) {
-                    buttonsHtml += `
-                        <button onclick="window.build('${cid}', '${type}')" class="bg-slate-800 p-2 rounded border border-slate-700 hover:border-blue-500 transition text-left group">
-                            <div class="text-[10px] text-slate-400 uppercase">${data.name}</div>
-                            <div class="font-bold text-white text-lg flex justify-between items-center">
-                                ${city.buildings[type] || 0}
-                                <span class="text-[10px] text-blue-500 group-hover:opacity-100 opacity-0">+$${formatNum(data.cost)}</span>
-                            </div>
-                        </button>
-                    `;
+            
+            snaps.forEach(d => {
+                const c = d.data();
+                const cid = d.id;
+                let btns = '';
+                for(let t in BUILDING_STATS) {
+                    btns += `<button onclick="window.build('${cid}','${t}')" class="bg-slate-800 p-2 rounded border border-slate-700 hover:border-blue-500 transition text-left">
+                        <div class="text-[9px] text-slate-400 uppercase">${BUILDING_STATS[t].name}</div>
+                        <div class="font-bold text-white">${c.buildings[t]||0}</div>
+                    </button>`;
                 }
-
                 const el = document.createElement('div');
                 el.className = 'game-card p-4 rounded-xl space-y-3';
-                el.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                        <span class="font-bold text-white flex items-center gap-2"><i data-lucide="map-pin" size="14"></i> ${city.name}</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        ${buttonsHtml}
-                    </div>
-                `;
+                el.innerHTML = `<div class="font-bold text-white border-b border-slate-700 pb-2">${c.name}</div><div class="grid grid-cols-3 gap-2">${btns}</div>`;
                 list.appendChild(el);
             });
-            lucide.createIcons();
         }
 
-        window.build = async (cityId, type) => {
+        window.build = async (cid, type) => {
             const cost = BUILDING_STATS[type].cost;
             if(currentNation.resources.money < cost) return toast(`Need $${formatNum(cost)}`, 'error');
-
             try {
-                // Optimistic UI
-                currentNation.resources.money -= cost;
-                renderResources();
-                
-                // DB Update
+                currentNation.resources.money -= cost; renderResources();
                 await updateDoc(doc(db, "nations", currentUser.uid), { "resources.money": increment(-cost) });
-                const updateKey = `buildings.${type}`;
-                await updateDoc(doc(db, "cities", cityId), { [updateKey]: increment(1) });
-                
-                toast(`Constructed ${BUILDING_STATS[type].name}`, 'success');
+                await updateDoc(doc(db, "cities", cid), { [`buildings.${type}`]: increment(1) });
+                loadCities(); toast("Constructed!", 'success');
+            } catch(e) { toast(e.message, 'error'); }
+        };
+        
+        document.getElementById('found-city-btn').onclick = async () => {
+             if(currentNation.resources.money < 50000) return toast("Need $50k", 'error');
+             const name = prompt("City Name:"); if(!name) return;
+             try {
+                currentNation.resources.money -= 50000; renderResources();
+                await updateDoc(doc(db, "nations", currentUser.uid), { "resources.money": increment(-50000) });
+                await addDoc(collection(db, "cities"), { nationId: currentUser.uid, name, buildings: { house: 5, farm: 1, steelMill: 0, bauxiteMine: 0, refinery: 0, ammoFactory: 0 } });
                 loadCities();
-            } catch(e) { toast("Error building", 'error'); loadGame(); }
+             } catch(e) { toast(e.message, 'error'); }
         };
 
-        document.getElementById('found-city-btn').onclick = async () => {
-            if(currentNation.resources.money < 50000) return toast("Need $50k", 'error');
-            const name = prompt("City Name:");
-            if(!name) return;
-            
-            try {
-                await updateDoc(doc(db, "nations", currentUser.uid), { "resources.money": increment(-50000) });
-                await addDoc(collection(db, "cities"), {
-                    nationId: currentUser.uid, name,
-                    buildings: { house: 5, farm: 1, steelMill: 0, bauxiteMine: 0, refinery: 0, ammoFactory: 0 }
-                });
-                currentNation.resources.money -= 50000;
-                renderResources();
-                loadCities();
-                toast("City Founded!", 'success');
-            } catch(e) { toast(e.message, 'error'); }
-        }
-
-        // --- MILITARY RECRUITMENT ---
         window.openRecruitModal = (type) => {
             selectedRecruitType = type;
             document.getElementById('recruit-type-name').innerText = type;
             document.getElementById('recruit-modal').classList.remove('hidden');
-            
-            const costs = UNIT_STATS[type].cost;
             let html = '';
-            for(const [res, amt] of Object.entries(costs)) {
-                html += `<div class="flex justify-between"><span>${res}:</span> <span>${amt}</span></div>`;
-            }
+            for(let k in UNIT_STATS[type].cost) html += `<div class="flex justify-between"><span>${k}:</span><span>${UNIT_STATS[type].cost[k]}</span></div>`;
             document.getElementById('recruit-cost-display').innerHTML = html;
         };
 
         document.getElementById('confirm-recruit-btn').onclick = async () => {
-            const amount = parseInt(document.getElementById('recruit-amount').value);
-            if(amount < 1) return;
-            
+            const amt = parseInt(document.getElementById('recruit-amount').value);
             const unit = UNIT_STATS[selectedRecruitType];
             const updates = {};
-            const localUpdates = {};
             
-            // Check costs
-            for(const [res, perUnit] of Object.entries(unit.cost)) {
-                const totalCost = perUnit * amount;
-                if(currentNation.resources[res] < totalCost) return toast(`Not enough ${res}! Need ${formatNum(totalCost)}`, 'error');
-                updates[`resources.${res}`] = increment(-totalCost);
-                localUpdates[res] = totalCost;
+            for(let r in unit.cost) {
+                if(currentNation.resources[r] < unit.cost[r] * amt) return toast(`Missing ${r}`, 'error');
+                updates[`resources.${r}`] = increment(-(unit.cost[r] * amt));
             }
-
-            try {
-                updates[`military.${selectedRecruitType}`] = increment(amount);
-                await updateDoc(doc(db, "nations", currentUser.uid), updates);
-                
-                // Local Update
-                for(const [res, cost] of Object.entries(localUpdates)) currentNation.resources[res] -= cost;
-                currentNation.military[selectedRecruitType] += amount;
-                
-                renderResources();
-                document.getElementById('recruit-modal').classList.add('hidden');
-                toast(`Recruited ${amount} ${selectedRecruitType}`, 'success');
-            } catch(e) { toast(e.message, 'error'); }
+            
+            updates[`military.${selectedRecruitType}`] = increment(amt);
+            await updateDoc(doc(db, "nations", currentUser.uid), updates);
+            
+            for(let r in unit.cost) currentNation.resources[r] -= (unit.cost[r] * amt);
+            currentNation.military[selectedRecruitType] += amt;
+            
+            renderResources();
+            document.getElementById('recruit-modal').classList.add('hidden');
+            toast(`Recruited ${amt} units`, 'success');
         };
 
-        // --- WAR SYSTEM ---
-        window.switchView = async (view) => {
-            ['dashboard', 'war', 'settings'].forEach(v => hide('view-'+v));
-            show('view-'+view);
-            document.querySelectorAll('.nav-btn').forEach(b => {
-                b.classList.replace('text-blue-500', 'text-slate-500');
-            });
-            event.currentTarget.classList.replace('text-slate-500', 'text-blue-500');
-
-            if(view === 'war') {
+        window.switchView = async (v) => {
+            ['dashboard','war','settings'].forEach(i=>hide('view-'+i)); show('view-'+v);
+            document.querySelectorAll('.nav-btn').forEach(b=>b.classList.replace('text-blue-500','text-slate-500'));
+            event.currentTarget.classList.replace('text-slate-500','text-blue-500');
+            
+            if(v === 'war') {
                 const list = document.getElementById('enemy-list');
-                const q = query(collection(db, "nations"), limit(10)); // Simplified matchmaking
-                const snaps = await getDocs(q);
+                const snaps = await getDocs(query(collection(db, "nations"), limit(10)));
                 list.innerHTML = '';
-                
                 snaps.forEach(d => {
                     if(d.id === currentUser.uid) return;
                     const e = d.data();
                     const el = document.createElement('div');
                     el.className = 'bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center';
-                    el.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <img src="${e.flag}" class="w-12 h-8 object-cover rounded shadow">
-                            <div>
-                                <div class="font-bold text-white">${e.name}</div>
-                                <div class="text-xs text-slate-400">Leader: ${e.leader}</div>
-                            </div>
-                        </div>
-                        <button onclick="window.attack('${d.id}')" class="bg-red-600 hover:bg-red-500 text-white p-2 rounded-lg font-bold shadow-lg shadow-red-900/50 text-xs">
-                            ATTACK
-                        </button>
-                    `;
+                    el.innerHTML = `<div class="flex items-center gap-3"><img src="${e.flag}" class="w-12 h-8 object-cover rounded shadow"><div><div class="font-bold text-white">${e.name}</div><div class="text-xs text-slate-400">${e.leader}</div></div></div><button onclick="window.attack('${d.id}')" class="bg-red-600 px-4 py-2 rounded font-bold text-xs text-white shadow-lg">ATTACK</button>`;
                     list.appendChild(el);
                 });
             }
         };
 
-        window.attack = async (targetId) => {
-            if(!confirm("Declare Full Scale War? This will use your units to attack.")) return;
-            
+        window.attack = async (tid) => {
+            if(!confirm("Declare War?")) return;
             show('loading-screen');
             try {
                 await runTransaction(db, async (t) => {
-                    const myRef = doc(db, "nations", currentUser.uid);
-                    const enemyRef = doc(db, "nations", targetId);
+                    const me = (await t.get(doc(db,"nations",currentUser.uid))).data();
+                    const en = (await t.get(doc(db,"nations",tid))).data();
+                    const myS = (me.military.soldiers) + (me.military.tanks*10); // Simplified
+                    const enS = (en.military.soldiers) + (en.military.tanks*10);
                     
-                    const me = (await t.get(myRef)).data();
-                    const enemy = (await t.get(enemyRef)).data();
-                    
-                    // Calculate Scores
-                    const myScore = (me.military.soldiers * 1) + (me.military.tanks * 10) + (me.military.aircraft * 25) + (me.military.ships * 60);
-                    const enemyScore = (enemy.military.soldiers * 1) + (enemy.military.tanks * 10) + (enemy.military.aircraft * 25) + (enemy.military.ships * 60);
-                    
-                    // Combat Variance (Random +/- 10%)
-                    const myRoll = myScore * (0.9 + Math.random() * 0.2);
-                    const enemyRoll = enemyScore * (0.9 + Math.random() * 0.2);
-                    
-                    if (myRoll > enemyRoll) {
-                        // VICTORY
-                        const loot = {};
-                        for(const r of ['money', 'food', 'steel', 'aluminum', 'gasoline', 'munitions']) {
-                            loot[r] = Math.floor(enemy.resources[r] * 0.15); // Steal 15%
-                        }
-                        
-                        // Casualties
-                        t.update(myRef, { 
-                            "military.soldiers": Math.floor(me.military.soldiers * 0.95), // 5% loss
-                            "resources.money": increment(loot.money),
-                            "resources.steel": increment(loot.steel)
-                            // ... Add other resources to transaction ...
-                        });
-                        
-                        t.update(enemyRef, {
-                            "military.soldiers": Math.floor(enemy.military.soldiers * 0.8), // 20% loss
-                            "resources.money": increment(-loot.money)
-                        });
-                        
-                        return { result: 'win', loot };
+                    if(myS * (0.9+Math.random()*0.2) > enS * (0.9+Math.random()*0.2)) {
+                        const loot = Math.floor(en.resources.money * 0.15);
+                        t.update(doc(db,"nations",currentUser.uid), { "resources.money": increment(loot), "military.soldiers": Math.floor(me.military.soldiers*0.95) });
+                        t.update(doc(db,"nations",tid), { "resources.money": increment(-loot), "military.soldiers": Math.floor(en.military.soldiers*0.8) });
+                        return {win:true, loot};
                     } else {
-                        // DEFEAT
-                        t.update(myRef, { "military.soldiers": Math.floor(me.military.soldiers * 0.85) });
-                        return { result: 'loss' };
+                        t.update(doc(db,"nations",currentUser.uid), { "military.soldiers": Math.floor(me.military.soldiers*0.85) });
+                        return {win:false};
                     }
                 }).then(res => {
                     hide('loading-screen');
-                    if(res.result === 'win') {
-                        toast(`VICTORY! Looted $${formatNum(res.loot.money)} and resources!`, 'success');
-                        loadGame(); // Reload to see new stats
-                    } else {
-                        toast("DEFEAT! Your forces retreated with heavy casualties.", 'error');
-                        loadGame();
-                    }
+                    toast(res.win ? `VICTORY! Looted $${formatNum(res.loot)}` : "DEFEAT", res.win?'success':'error');
+                    loadGame();
                 });
-            } catch(e) { hide('loading-screen'); toast("Attack error: "+e.message, 'error'); }
+            } catch(e) { hide('loading-screen'); toast("Attack Failed", 'error'); }
         };
-
     </script>
 </body>
 </html>
