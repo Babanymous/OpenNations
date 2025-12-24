@@ -611,17 +611,54 @@
         }
 
         // --- MISC ---
+        // REPLACE THE OLD 'calcOffline' FUNCTION WITH THIS:
+
         async function calcOffline() {
             const now = new Date();
             const last = nation.lastCollection?.toDate() || now;
+            // Cap calculation at 24 hours (1440 mins) to prevent exploits
             const mins = Math.min(Math.floor((now - last) / 60000), 1440);
-            if (mins > 5) {
-                const inc = mins * 100; // Base income
-                await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(inc), lastCollection: serverTimestamp() });
-                nation.resources.money += inc;
-                toast(`Offline Income: $${fmt(inc)}`, 'success');
+        
+            if (mins > 1) {
+                // 1. Fetch all your cities to count buildings
+                const citiesQ = query(collection(db, "cities"), where("nationId", "==", user.uid));
+                const snaps = await getDocs(citiesQ);
+        
+                // 2. Define Production Rates (Per Minute per Building)
+                let production = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
+        
+                snaps.forEach(d => {
+                    const b = d.data().buildings;
+                    // Balance these numbers to change game speed!
+                    if(b.house)       production.money     += b.house * 10;
+                    if(b.farm)        production.food      += b.farm * 1;
+                    if(b.steelMill)   production.steel     += b.steelMill * 0.5;
+                    if(b.bauxiteMine) production.aluminum  += b.bauxiteMine * 0.5; // <--- Produces Aluminum
+                    if(b.refinery)    production.gasoline  += b.refinery * 0.5;    // <--- Produces Gas
+                    if(b.ammoFactory) production.munitions += b.ammoFactory * 0.5;
+                });
+        
+                // 3. Update Database
+                const updates = { lastCollection: serverTimestamp() };
+                let producedText = "";
+        
+                for(let r in production) {
+                    const amount = Math.floor(production[r] * mins);
+                    if(amount > 0) {
+                        updates[`resources.${r}`] = increment(amount);
+                        nation.resources[r] += amount; // Update screen immediately
+                        producedText += `${fmt(amount)} ${r}, `;
+                    }
+                }
+        
+                if(producedText !== "") {
+                    await updateDoc(doc(db, "nations", user.uid), updates);
+                    renderResources();
+                    toast(`While offline you produced: ${producedText}`, 'success');
+                }
             }
         }
+
 
         el('flag-upload').onchange = async (e) => {
             const f = e.target.files[0];
