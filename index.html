@@ -158,7 +158,7 @@
                     <p class="text-xs text-red-200/60 mt-1">Select a target. Use Spies to reveal enemy strength before attacking.</p>
                 </div>
                 
-                <!-- NEW SEARCH BAR -->
+                <!-- SEARCH BAR -->
                 <div class="flex gap-2">
                     <input type="text" id="war-search-input" placeholder="Search by Nation Name..." class="bg-slate-800 border border-slate-700 text-white rounded p-2 flex-1 text-sm outline-none focus:border-blue-500">
                     <button onclick="window.searchWar()" class="btn-blue px-4 rounded font-bold text-white text-xs"><i data-lucide="search"></i></button>
@@ -271,7 +271,6 @@
                 <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-black font-black text-xs px-2 py-1 rounded">TOP SECRET</div>
                 <h3 class="text-xl font-bold text-amber-500 mb-4 flex items-center gap-2"><i data-lucide="eye"></i> INTEL REPORT</h3>
                 <div id="report-content" class="font-mono text-sm text-amber-100 space-y-2 mb-6"></div>
-                <!-- FIXED BUTTON -->
                 <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-full bg-slate-800 hover:bg-slate-700 text-white p-3 rounded font-bold">BURN DOCUMENT</button>
             </div>
         </div>
@@ -573,21 +572,27 @@
                 await runTransaction(db, async (t) => {
                     const me = (await t.get(doc(db,"nations",user.uid))).data();
                     const en = (await t.get(doc(db,"nations",tid))).data();
-                    const myS = (me.military.soldiers) + (me.military.tanks*10) + (me.military.aircraft*20);
-                    const enS = (en.military.soldiers) + (en.military.tanks*10) + (en.military.aircraft*20);
                     
-                    if(myS * (0.9+Math.random()*0.2) > enS * (0.9+Math.random()*0.2)) {
+                    // FIXED SCORING: Ships now worth 50 points
+                    const myS = (me.military.soldiers||0)*1 + (me.military.tanks||0)*10 + (me.military.aircraft||0)*20 + (me.military.ships||0)*50;
+                    const enS = (en.military.soldiers||0)*1 + (en.military.tanks||0)*10 + (en.military.aircraft||0)*20 + (en.military.ships||0)*50;
+                    
+                    // Display scores for feedback (for dev/alpha)
+                    const myPower = Math.floor(myS * (0.9+Math.random()*0.2));
+                    const enPower = Math.floor(enS * (0.9+Math.random()*0.2));
+
+                    if(myPower > enPower) {
                         const loot = Math.floor(en.resources.money * 0.2);
                         t.update(doc(db,"nations",user.uid), { "resources.money": increment(loot), "military.soldiers": Math.floor(me.military.soldiers*0.95) });
                         t.update(doc(db,"nations",tid), { "resources.money": increment(-loot), "military.soldiers": Math.floor(en.military.soldiers*0.8) });
                         logEvent(`${me.name} defeated ${en.name} and looted $${fmt(loot)}`);
-                        return {win:true, loot};
+                        return {win:true, loot, myPower, enPower};
                     } else {
                         t.update(doc(db,"nations",user.uid), { "military.soldiers": Math.floor(me.military.soldiers*0.8) });
                         logEvent(`${me.name} failed to invade ${en.name}`);
-                        return {win:false};
+                        return {win:false, myPower, enPower};
                     }
-                }).then(res => toast(res.win ? `VICTORY! +$${fmt(res.loot)}` : "DEFEAT", res.win?'success':'error'));
+                }).then(res => toast(res.win ? `VICTORY! +$${fmt(res.loot)} (Score: ${res.myPower} vs ${res.enPower})` : `DEFEAT (Score: ${res.myPower} vs ${res.enPower})`, res.win?'success':'error'));
             } catch(e) { toast("Attack Failed", 'error'); }
         };
 
