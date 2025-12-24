@@ -155,7 +155,7 @@
             <div id="view-war" class="hidden p-4 space-y-4 pb-20">
                 <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl">
                     <h2 class="text-red-500 font-bold text-lg flex items-center gap-2"><i data-lucide="crosshair"></i> War Room</h2>
-                    <p class="text-xs text-red-200/60 mt-1">Select a target. Use Spies to reveal enemy strength before attacking.</p>
+                    <p class="text-xs text-red-200/60 mt-1">Global Attack Cooldown: 3 Hours. Same-Target Cooldown: 12 Hours.</p>
                 </div>
                 
                 <!-- SEARCH BAR -->
@@ -299,7 +299,9 @@
         const db = getFirestore(app);
 
         // --- GAME DATA ---
-        const MAX_SLOTS = 30; // Building cap per city
+        const GLOBAL_COOLDOWN_MS = 3 * 60 * 60 * 1000; // 3 Hours
+        const TARGET_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 Hours
+        const MAX_SLOTS = 30; 
         const UNIT_STATS = {
             soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
             tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
@@ -492,11 +494,8 @@
             
             let q;
             if (searchTerm) {
-                // Search by Name prefix
                 q = query(collection(db, "nations"), orderBy('name'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'), limit(10));
             } else {
-                // Default: Show strong nations (sorted by military soldiers descending is tricky without compound index, so default to randomish/limit)
-                // Using limit(10) is safe. For better gameplay, add an index on 'stats.population' desc.
                 q = query(collection(db, "nations"), orderBy("stats.population", "desc"), limit(10));
             }
 
@@ -541,7 +540,7 @@
             if(!nation.military.spies || nation.military.spies < 1) return toast("You must TRAIN SPIES first!", 'error');
             
             el('loading-screen').classList.remove('hidden');
-            const isCaught = Math.random() < 0.25; // 25% death risk
+            const isCaught = Math.random() < 0.25; 
             
             if(isCaught) {
                 await updateDoc(doc(db, "nations", user.uid), { "military.spies": increment(-1) });
@@ -566,34 +565,70 @@
             el('report-modal').classList.remove('hidden');
         };
 
+        // --- ATTACK WITH COOLDOWNS ---
         window.attack = async (tid) => {
             if(!confirm("Declare WAR?")) return;
+            el('loading-screen').classList.remove('hidden');
+
             try {
                 await runTransaction(db, async (t) => {
-                    const me = (await t.get(doc(db,"nations",user.uid))).data();
+                    const myRef = doc(db,"nations",user.uid);
+                    const meSnap = await t.get(myRef);
+                    const me = meSnap.data();
+                    
+                    // 1. CHECK GLOBAL COOLDOWN
+                    const now = Date.now();
+                    const lastGlobal = me.lastAttack?.toMillis() || 0;
+                    if (now - lastGlobal < GLOBAL_COOLDOWN_MS) {
+                        const remaining = Math.ceil((GLOBAL_COOLDOWN_MS - (now - lastGlobal)) / 60000);
+                        throw `Army exhausted! Wait ${Math.floor(remaining/60)}h ${remaining%60}m.`;
+                    }
+
+                    // 2. CHECK TARGET SPECIFIC COOLDOWN
+                    const lastTarget = me.attackHistory?.[tid]?.toMillis() || 0;
+                    if (now - lastTarget < TARGET_COOLDOWN_MS) {
+                        const remaining = Math.ceil((TARGET_COOLDOWN_MS - (now - lastTarget)) / 60000);
+                        throw `Truce active with this nation! Wait ${Math.floor(remaining/60)}h ${remaining%60}m.`;
+                    }
+
                     const en = (await t.get(doc(db,"nations",tid))).data();
                     
-                    // FIXED SCORING: Ships now worth 50 points
                     const myS = (me.military.soldiers||0)*1 + (me.military.tanks||0)*10 + (me.military.aircraft||0)*20 + (me.military.ships||0)*50;
                     const enS = (en.military.soldiers||0)*1 + (en.military.tanks||0)*10 + (en.military.aircraft||0)*20 + (en.military.ships||0)*50;
                     
-                    // Display scores for feedback (for dev/alpha)
                     const myPower = Math.floor(myS * (0.9+Math.random()*0.2));
                     const enPower = Math.floor(enS * (0.9+Math.random()*0.2));
 
                     if(myPower > enPower) {
                         const loot = Math.floor(en.resources.money * 0.2);
-                        t.update(doc(db,"nations",user.uid), { "resources.money": increment(loot), "military.soldiers": Math.floor(me.military.soldiers*0.95) });
+                        t.update(myRef, { 
+                            "resources.money": increment(loot), 
+                            "military.soldiers": Math.floor(me.military.soldiers*0.95),
+                            lastAttack: serverTimestamp(),
+                            [`attackHistory.${tid}`]: serverTimestamp()
+                        });
                         t.update(doc(db,"nations",tid), { "resources.money": increment(-loot), "military.soldiers": Math.floor(en.military.soldiers*0.8) });
                         logEvent(`${me.name} defeated ${en.name} and looted $${fmt(loot)}`);
                         return {win:true, loot, myPower, enPower};
                     } else {
-                        t.update(doc(db,"nations",user.uid), { "military.soldiers": Math.floor(me.military.soldiers*0.8) });
+                        t.update(myRef, { 
+                            "military.soldiers": Math.floor(me.military.soldiers*0.8),
+                            lastAttack: serverTimestamp(), // Cooldown applies even on defeat
+                            [`attackHistory.${tid}`]: serverTimestamp()
+                        });
                         logEvent(`${me.name} failed to invade ${en.name}`);
                         return {win:false, myPower, enPower};
                     }
-                }).then(res => toast(res.win ? `VICTORY! +$${fmt(res.loot)} (Score: ${res.myPower} vs ${res.enPower})` : `DEFEAT (Score: ${res.myPower} vs ${res.enPower})`, res.win?'success':'error'));
-            } catch(e) { toast("Attack Failed", 'error'); }
+                }).then(res => {
+                    el('loading-screen').classList.add('hidden');
+                    toast(res.win ? `VICTORY! +$${fmt(res.loot)} (Score: ${res.myPower} vs ${res.enPower})` : `DEFEAT (Score: ${res.myPower} vs ${res.enPower})`, res.win?'success':'error');
+                    // Update local nation for immediate feedback
+                    nation.lastAttack = { toMillis: () => Date.now() }; // Mock update
+                });
+            } catch(e) { 
+                el('loading-screen').classList.add('hidden');
+                toast(e.toString(), 'error'); 
+            }
         };
 
         // --- MARKET ---
