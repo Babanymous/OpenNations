@@ -668,7 +668,7 @@
                 let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
                 snaps.forEach(d => {
                     const b = d.data().buildings;
-                    if(b.house)       prod.money     += b.house * 10;
+                    if(b.house)       prod.money     += b.house * 25;
                     if(b.farm)        prod.food      += b.farm * 1;
                     if(b.steelMill)   prod.steel     += b.steelMill * 0.5;
                     if(b.bauxiteMine) prod.aluminum  += b.bauxiteMine * 0.5;
