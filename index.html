@@ -30,6 +30,10 @@
         ::-webkit-scrollbar { width: 0px; background: transparent; }
         .toast { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Modal Animation */
+        .modal-animate { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="flex flex-col">
@@ -132,7 +136,10 @@
                             <div><div class="text-[10px] text-slate-400">SHIPS</div><div class="font-bold text-white" id="mil-ships">0</div></div><i data-lucide="anchor" class="text-orange-500" size="18"></i>
                         </button>
                     </div>
-                    <button onclick="openSpyModal()" class="w-full mt-3 btn-amber p-2 rounded text-xs font-bold text-white shadow-lg">TRAIN SPIES</button>
+                    <!-- SPIES BUTTON -->
+                    <button onclick="openRecruitModal('spies')" class="w-full mt-3 btn-amber p-2 rounded text-xs font-bold text-white shadow-lg flex justify-center items-center gap-2">
+                        <i data-lucide="eye" size="14"></i> TRAIN SPIES (Active: <span id="mil-spies">0</span>)
+                    </button>
                 </div>
 
                 <!-- Cities -->
@@ -149,7 +156,7 @@
             <div id="view-war" class="hidden p-4 space-y-4 pb-20">
                 <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl">
                     <h2 class="text-red-500 font-bold text-lg flex items-center gap-2"><i data-lucide="crosshair"></i> War Room</h2>
-                    <p class="text-xs text-red-200/60 mt-1">Select a target. Ensure your military score guarantees victory.</p>
+                    <p class="text-xs text-red-200/60 mt-1">Select a target. Use Spies to reveal enemy strength before attacking.</p>
                 </div>
                 <div id="enemy-list" class="space-y-3"></div>
             </div>
@@ -210,7 +217,7 @@
         <!-- MODALS -->
         <!-- Recruit Modal -->
         <div id="recruit-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700">
+            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700 modal-animate">
                 <h3 class="text-lg font-bold text-white mb-2">Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
                 <div id="recruit-cost-display" class="text-xs text-slate-400 mb-4 font-mono"></div>
                 <div class="flex gap-2">
@@ -223,7 +230,7 @@
         
         <!-- Sell Modal -->
         <div id="sell-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700">
+            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700 modal-animate">
                 <h3 class="text-lg font-bold text-white mb-4">Post Trade Offer</h3>
                 <div class="space-y-3">
                     <select id="sell-resource" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
@@ -236,6 +243,16 @@
                     <button onclick="postTrade()" class="w-full btn-green p-3 rounded font-bold text-white">POST OFFER</button>
                 </div>
                 <button onclick="closeModals()" class="w-full mt-2 text-xs text-slate-500 py-2">CANCEL</button>
+            </div>
+        </div>
+
+        <!-- Spy Report Modal -->
+        <div id="report-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+            <div class="bg-slate-900 w-full max-w-sm rounded-xl p-6 border-2 border-amber-500 modal-animate relative">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-black font-black text-xs px-2 py-1 rounded">TOP SECRET</div>
+                <h3 class="text-xl font-bold text-amber-500 mb-4 flex items-center gap-2"><i data-lucide="eye"></i> INTEL REPORT</h3>
+                <div id="report-content" class="font-mono text-sm text-amber-100 space-y-2 mb-6"></div>
+                <button onclick="el('report-modal').classList.add('hidden')" class="w-full bg-slate-800 hover:bg-slate-700 text-white p-3 rounded font-bold">BURN DOCUMENT</button>
             </div>
         </div>
 
@@ -423,12 +440,40 @@
             });
             lucide.createIcons();
         }
+        
         window.spy = async (tid) => {
-            if(nation.resources.money < 2000) return toast("Spy op costs $2,000", 'error');
+            // Check for spies
+            if(!nation.military.spies || nation.military.spies < 1) return toast("You must TRAIN SPIES first!", 'error');
+            
+            el('loading-screen').classList.remove('hidden');
+            
+            // Risk calculation (25% death rate)
+            const isCaught = Math.random() < 0.25;
+            
+            if(isCaught) {
+                await updateDoc(doc(db, "nations", user.uid), { "military.spies": increment(-1) });
+                nation.military.spies--;
+                renderResources();
+                el('loading-screen').classList.add('hidden');
+                return toast("Spy caught and executed!", 'error');
+            }
+
             const snap = await getDoc(doc(db, "nations", tid));
             const e = snap.data();
-            alert(`SPY REPORT on ${e.name}:\nMoney: ${fmt(e.resources.money)}\nSoldiers: ${e.military.soldiers}\nTanks: ${e.military.tanks}\nJets: ${e.military.aircraft}`);
+            el('loading-screen').classList.add('hidden');
+            
+            // Show Report Modal
+            el('report-content').innerHTML = `
+                <div class="flex justify-between border-b border-amber-500/30 pb-1"><span>TARGET:</span> <span class="text-white">${e.name}</span></div>
+                <div class="flex justify-between"><span>MONEY:</span> <span class="text-white">$${fmt(e.resources.money)}</span></div>
+                <div class="flex justify-between"><span>SOLDIERS:</span> <span class="text-white">${fmt(e.military.soldiers||0)}</span></div>
+                <div class="flex justify-between"><span>TANKS:</span> <span class="text-white">${fmt(e.military.tanks||0)}</span></div>
+                <div class="flex justify-between"><span>AIRCRAFT:</span> <span class="text-white">${fmt(e.military.aircraft||0)}</span></div>
+                <div class="flex justify-between"><span>SHIPS:</span> <span class="text-white">${fmt(e.military.ships||0)}</span></div>
+            `;
+            el('report-modal').classList.remove('hidden');
         };
+
         window.attack = async (tid) => {
             if(!confirm("Declare WAR?")) return;
             try {
@@ -567,8 +612,6 @@
 
         // --- MISC ---
         async function calcOffline() {
-            // ... (Simplified version of previous offline logic) ... 
-            // Just basic income to keep code small
             const now = new Date();
             const last = nation.lastCollection?.toDate() || now;
             const mins = Math.min(Math.floor((now - last) / 60000), 1440);
@@ -620,3 +663,5 @@
     </script>
 </body>
 </html>
+
+
