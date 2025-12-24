@@ -31,7 +31,6 @@
         .toast { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Modal Animation */
         .modal-animate { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
@@ -264,6 +263,7 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit, orderBy, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // --- CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBHqPKczjs451HSI9NnRDKM7hXtWOwu0f4",
             authDomain: "opennations-b73bd.firebaseapp.com",
@@ -279,6 +279,7 @@
         const db = getFirestore(app);
 
         // --- GAME DATA ---
+        const MAX_SLOTS = 20; // Building cap per city
         const UNIT_STATS = {
             soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
             tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
@@ -331,7 +332,7 @@
             const snap = await getDoc(doc(db, "nations", user.uid));
             if(snap.exists()) {
                 nation = snap.data();
-                await calcOffline();
+                await calcOffline(); // Advanced resource calc
                 await loadAlliance();
                 initUI();
             } else {
@@ -350,7 +351,8 @@
             el('nav-nation-name').innerText = nation.name;
             el('nav-flag').src = nation.flag;
             el('dash-leader').innerText = nation.leader;
-            el('dash-pop').innerText = fmt(nation.stats?.population || 1000);
+            el('dash-pop').innerText = fmt(nation.stats?.population || 0);
+            if(nation.military.spies) el('mil-spies').innerText = nation.military.spies;
             renderResources();
             loadCities();
             loadNews();
@@ -361,66 +363,82 @@
             for(let u in nation.military) { if(el(`mil-${u}`)) el(`mil-${u}`).innerText = fmt(nation.military[u]); }
         }
 
-        // --- CITIES ---
+        // --- CITIES & BUILDING ---
         async function loadCities() {
             const list = el('cities-list'); list.innerHTML = '';
             const snaps = await getDocs(query(collection(db, "cities"), where("nationId", "==", user.uid)));
             snaps.forEach(d => {
                 const c = d.data();
+                let totalBuildings = 0;
+                for(let k in c.buildings) totalBuildings += c.buildings[k];
+                const isFull = totalBuildings >= MAX_SLOTS;
+                const slotColor = isFull ? 'text-red-500' : 'text-emerald-500';
+
                 let bHtml = '';
-                for(let k in BUILDING_STATS) bHtml += `<button onclick="window.build('${d.id}','${k}')" class="bg-slate-800 p-1 rounded border border-slate-700 hover:border-blue-500 text-left"><div class="text-[9px] text-slate-400 uppercase">${BUILDING_STATS[k].name}</div><div class="font-bold text-white text-xs">${c.buildings[k]||0}</div></button>`;
+                for(let k in BUILDING_STATS) {
+                    const disabled = isFull ? 'opacity-40 cursor-not-allowed' : 'hover:border-blue-500';
+                    bHtml += `<button onclick="window.build('${d.id}','${k}', ${totalBuildings})" class="bg-slate-800 p-1 rounded border border-slate-700 ${disabled} text-left">
+                        <div class="text-[9px] text-slate-400 uppercase">${BUILDING_STATS[k].name}</div>
+                        <div class="font-bold text-white text-xs">${c.buildings[k]||0}</div>
+                    </button>`;
+                }
                 const div = document.createElement('div');
                 div.className = 'game-card p-3 rounded-xl space-y-2';
-                div.innerHTML = `<div class="font-bold text-white text-sm border-b border-slate-700 pb-1">${c.name}</div><div class="grid grid-cols-3 gap-1">${bHtml}</div>`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-1">
+                        <div class="font-bold text-white text-sm">${c.name}</div>
+                        <div class="text-[10px] font-mono ${slotColor}">SLOTS: ${totalBuildings}/${MAX_SLOTS}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">${bHtml}</div>`;
                 list.appendChild(div);
             });
         }
-        window.build = async (cid, type) => {
-            const cost = BUILDING_STATS[type].cost;
+
+        window.build = async (cid, type, currentCount) => {
+            if (currentCount >= MAX_SLOTS) return toast("City is FULL! Found a new city.", 'error');
             
-            // 1. Check if user has enough money
+            const cost = BUILDING_STATS[type].cost;
             if(nation.resources.money < cost) return toast(`Need $${fmt(cost)}`, 'error');
-        
+            
             try {
-                // 2. Deduct Money locally
                 nation.resources.money -= cost; 
-                
-                // Prepare database updates
                 const nationUpdates = { "resources.money": increment(-cost) };
-        
-                // --- NEW LOGIC: POPULATION GROWTH ---
-                // If the building is "Housing", increase population by 100
+
+                // POPULATION GROWTH
                 if(type === 'house') {
-                    const popGain = 100; // 1 House = 100 People
+                    const popGain = 100;
                     nationUpdates["stats.population"] = increment(popGain);
-                    
-                    // Update local screen immediately
                     nation.stats.population = (nation.stats.population || 0) + popGain;
                     el('dash-pop').innerText = fmt(nation.stats.population);
                 }
-                // ------------------------------------
-        
-                // 3. Send updates to Firebase
+
                 await updateDoc(doc(db, "nations", user.uid), nationUpdates);
                 await updateDoc(doc(db, "cities", cid), { [`buildings.${type}`]: increment(1) });
-        
-                // 4. Refresh UI
+                
                 renderResources();
                 loadCities(); 
-                toast(`Constructed ${BUILDING_STATS[type].name}`, 'success');
-        
-            } catch(e){ 
-                console.error(e); // Log error to console for debugging
-                toast("Build failed. Check connection.", 'error'); 
-            }
+                toast("Constructed!", 'success');
+            } catch(e){ toast("Error", 'error'); }
         };
 
         el('found-city-btn').onclick = async () => {
             if(nation.resources.money < 50000) return toast("Need $50k", 'error');
             const n = prompt("City Name:"); if(!n) return;
-            nation.resources.money -= 50000; renderResources();
-            await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(-50000) });
-            await addDoc(collection(db, "cities"), { nationId: user.uid, name: n, buildings: {house:5,farm:1,steelMill:0,bauxiteMine:0,refinery:0,ammoFactory:0}});
+            
+            nation.resources.money -= 50000; 
+            nation.stats.population = (nation.stats.population || 0) + 1000; // Capital starts with pop
+            renderResources();
+            el('dash-pop').innerText = fmt(nation.stats.population);
+
+            await updateDoc(doc(db, "nations", user.uid), { 
+                "resources.money": increment(-50000),
+                "stats.population": increment(1000) 
+            });
+            // New city gets pre-built buildings (approx 14 slots used)
+            await addDoc(collection(db, "cities"), { 
+                nationId: user.uid, name: n, 
+                buildings: {house:10, farm:2, steelMill:1, bauxiteMine:0, refinery:0, ammoFactory:1}
+            });
             loadCities(); logEvent(`${nation.name} founded ${n}`);
         };
 
@@ -443,6 +461,7 @@
             await updateDoc(doc(db, "nations", user.uid), updates);
             for(let r in unit.cost) nation.resources[r] -= (unit.cost[r]*amt);
             nation.military[recruitType] = (nation.military[recruitType]||0) + amt;
+            if(recruitType === 'spies') el('mil-spies').innerText = nation.military.spies;
             renderResources(); closeModals(); toast(`Recruited ${amt} ${recruitType}`, 'success');
         };
 
@@ -472,18 +491,15 @@
         }
         
         window.spy = async (tid) => {
-            // Check for spies
             if(!nation.military.spies || nation.military.spies < 1) return toast("You must TRAIN SPIES first!", 'error');
             
             el('loading-screen').classList.remove('hidden');
-            
-            // Risk calculation (25% death rate)
-            const isCaught = Math.random() < 0.25;
+            const isCaught = Math.random() < 0.25; // 25% death risk
             
             if(isCaught) {
                 await updateDoc(doc(db, "nations", user.uid), { "military.spies": increment(-1) });
                 nation.military.spies--;
-                renderResources();
+                el('mil-spies').innerText = nation.military.spies;
                 el('loading-screen').classList.add('hidden');
                 return toast("Spy caught and executed!", 'error');
             }
@@ -492,7 +508,6 @@
             const e = snap.data();
             el('loading-screen').classList.add('hidden');
             
-            // Show Report Modal
             el('report-content').innerHTML = `
                 <div class="flex justify-between border-b border-amber-500/30 pb-1"><span>TARGET:</span> <span class="text-white">${e.name}</span></div>
                 <div class="flex justify-between"><span>MONEY:</span> <span class="text-white">$${fmt(e.resources.money)}</span></div>
@@ -584,8 +599,6 @@
                     el('alliance-bank').innerText = `$${fmt(alliance.bank)}`;
                     el('no-alliance-ui').classList.add('hidden');
                     el('alliance-ui').classList.remove('hidden');
-                    
-                    // Members
                     el('alliance-members-list').innerHTML = alliance.members.map(m => `<div class="bg-slate-800 p-2 rounded text-xs text-white">${m.name}</div>`).join('');
                 }
             }
@@ -640,56 +653,49 @@
             await addDoc(collection(db, "events"), { text, timestamp: serverTimestamp() });
         }
 
-        // --- MISC ---
-        // REPLACE THE OLD 'calcOffline' FUNCTION WITH THIS:
-
+        // --- OFFLINE CALCULATION (Advanced) ---
         async function calcOffline() {
             const now = new Date();
             const last = nation.lastCollection?.toDate() || now;
-            // Cap calculation at 24 hours (1440 mins) to prevent exploits
-            const mins = Math.min(Math.floor((now - last) / 60000), 1440);
-        
+            const mins = Math.min(Math.floor((now - last) / 60000), 1440); // Cap at 24h
+
             if (mins > 1) {
-                // 1. Fetch all your cities to count buildings
+                // 1. Fetch cities
                 const citiesQ = query(collection(db, "cities"), where("nationId", "==", user.uid));
                 const snaps = await getDocs(citiesQ);
-        
-                // 2. Define Production Rates (Per Minute per Building)
-                let production = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
-        
+
+                // 2. Calc Production rates
+                let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
                 snaps.forEach(d => {
                     const b = d.data().buildings;
-                    // Balance these numbers to change game speed!
-                    if(b.house)       production.money     += b.house * 10;
-                    if(b.farm)        production.food      += b.farm * 1;
-                    if(b.steelMill)   production.steel     += b.steelMill * 0.5;
-                    if(b.bauxiteMine) production.aluminum  += b.bauxiteMine * 0.5; // <--- Produces Aluminum
-                    if(b.refinery)    production.gasoline  += b.refinery * 0.5;    // <--- Produces Gas
-                    if(b.ammoFactory) production.munitions += b.ammoFactory * 0.5;
+                    if(b.house)       prod.money     += b.house * 10;
+                    if(b.farm)        prod.food      += b.farm * 1;
+                    if(b.steelMill)   prod.steel     += b.steelMill * 0.5;
+                    if(b.bauxiteMine) prod.aluminum  += b.bauxiteMine * 0.5;
+                    if(b.refinery)    prod.gasoline  += b.refinery * 0.5;
+                    if(b.ammoFactory) prod.munitions += b.ammoFactory * 0.5;
                 });
-        
-                // 3. Update Database
+
+                // 3. Apply
                 const updates = { lastCollection: serverTimestamp() };
-                let producedText = "";
-        
-                for(let r in production) {
-                    const amount = Math.floor(production[r] * mins);
-                    if(amount > 0) {
-                        updates[`resources.${r}`] = increment(amount);
-                        nation.resources[r] += amount; // Update screen immediately
-                        producedText += `${fmt(amount)} ${r}, `;
+                let msg = "";
+                for(let r in prod) {
+                    const amt = Math.floor(prod[r] * mins);
+                    if(amt > 0) {
+                        updates[`resources.${r}`] = increment(amt);
+                        nation.resources[r] += amt;
+                        msg += `${fmt(amt)} ${r}, `;
                     }
                 }
-        
-                if(producedText !== "") {
+                if(msg !== "") {
                     await updateDoc(doc(db, "nations", user.uid), updates);
                     renderResources();
-                    toast(`While offline you produced: ${producedText}`, 'success');
+                    toast(`Offline Gains: ${msg}`, 'success');
                 }
             }
         }
 
-
+        // --- INIT CREATE ---
         el('flag-upload').onchange = async (e) => {
             const f = e.target.files[0];
             if(f) {
@@ -698,8 +704,6 @@
                 el('flag-preview').classList.remove('hidden');
             }
         };
-
-        // Create Nation
         el('create-nation-btn').onclick = async () => {
             const name = el('new-nation-name').value;
             const leader = el('new-leader-name').value;
@@ -710,7 +714,10 @@
                 military: { soldiers: 20 }, stats: { population: 1000 },
                 lastCollection: serverTimestamp()
             });
-            await addDoc(collection(db, "cities"), { nationId: user.uid, name: "Capital", buildings: {house:5,farm:1,steelMill:0,bauxiteMine:0,refinery:0,ammoFactory:0} });
+            await addDoc(collection(db, "cities"), { 
+                nationId: user.uid, name: "Capital", 
+                buildings: {house:10,farm:2,steelMill:1,bauxiteMine:0,refinery:0,ammoFactory:1} // Pre-built
+            });
             logEvent(`New nation ${name} established!`);
             location.reload();
         };
