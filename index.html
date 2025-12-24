@@ -620,19 +620,3 @@
     </script>
 </body>
 </html>
-
-Setup Requirements for New Features
-Because we added new features (Trade, Alliances, News), you need to update your Firestore Security Rules in the Firebase Console to allow these new collections.
-Copy and paste this into Firestore Database > Rules:
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // Default: Authenticated users can read/write everything (Simplest for this game type)
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-
-
