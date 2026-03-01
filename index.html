@@ -1,965 +1,1069 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OpenNations: Global Conflict</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunnEep - Deine Lauf-App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* CORE STYLES */
-        html, body { height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
-        body { background-color: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* UI COMPONENTS */
-        .glass-panel { background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255,255,255,0.1); }
-        .game-card { background: #1e293b; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        
-        /* BUTTONS */
-        .btn-blue { background: linear-gradient(to bottom, #3b82f6, #2563eb); border-top: 1px solid #60a5fa; }
-        .btn-red { background: linear-gradient(to bottom, #ef4444, #dc2626); border-top: 1px solid #f87171; }
-        .btn-green { background: linear-gradient(to bottom, #22c55e, #16a34a); border-top: 1px solid #4ade80; }
-        .btn-amber { background: linear-gradient(to bottom, #f59e0b, #d97706); border-top: 1px solid #fbbf24; }
-        .btn-purple { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); border-top: 1px solid #a78bfa; }
-        .btn:active { transform: translateY(1px); filter: brightness(0.9); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* UTILS */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-        .toast { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .modal-animate { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        :root {
+            --primary-color: #4F46E5;
+            --primary-dark: #4338CA;
+            --secondary-color: #10B981;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --border-color: #E5E7EB;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .auth-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .user-details h3 {
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .user-details p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--border-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .workout-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .workout-controls .btn {
+            flex: 1;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .status-display {
+            background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .status-display h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #F9FAFB;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+            transition: transform 0.2s ease;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .history-stat {
+            text-align: center;
+        }
+
+        .history-stat-value {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .history-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--secondary-color);
+        }
+
+        .notification.error {
+            background: var(--danger-color);
+        }
+
+        .notification.info {
+            background: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .workout-controls {
+                flex-direction: column;
+            }
+
+            .workout-controls .btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
-<body class="flex flex-col">
-
-    <!-- TOASTS & LOADERS -->
-    <div id="toast-container" class="fixed top-16 left-0 right-0 z-[60] flex flex-col items-center gap-2 pointer-events-none"></div>
-    <div id="loading-screen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center">
-        <div class="animate-spin text-blue-500 mb-4"><i data-lucide="loader-2" width="48" height="48"></i></div>
-        <h2 class="text-xl font-bold tracking-[0.2em] text-blue-400">CONNECTING...</h2>
-    </div>
-
-    <!-- AUTH SCREEN -->
-    <div id="auth-screen" class="hidden fixed inset-0 z-40 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center p-6">
-            <i data-lucide="globe-2" class="w-20 h-20 text-blue-500 mx-auto mb-4 animate-pulse"></i>
-            <h1 class="text-5xl font-black text-white tracking-tighter mb-8">OPEN<span class="text-blue-500">NATIONS</span></h1>
-            <button id="login-btn" class="btn-blue w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-2xl flex items-center justify-center gap-3">
-                <i data-lucide="log-in"></i> Initialize Regime
-            </button>
-        </div>
-    </div>
-
-    <!-- CREATE NATION -->
-    <div id="create-screen" class="hidden fixed inset-0 z-40 bg-slate-900 p-6 flex items-center justify-center overflow-y-auto">
-        <div class="w-full max-w-md bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl my-auto space-y-4">
-            <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="flag" class="text-blue-500"></i> Found Nation</h2>
-            <input type="text" id="new-nation-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white" placeholder="Nation Name">
-            <input type="text" id="new-leader-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white" placeholder="Leader Name">
-            
-            <div class="flex items-center gap-4">
-                <div class="relative w-16 h-12 bg-slate-900 rounded border border-slate-700 overflow-hidden shrink-0">
-                    <img id="flag-preview" class="w-full h-full object-cover hidden">
-                    <div id="flag-placeholder" class="absolute inset-0 flex items-center justify-center text-slate-600"><i data-lucide="image"></i></div>
-                </div>
-                <label class="cursor-pointer btn-blue px-4 py-2 rounded text-sm font-bold flex-1 text-center">
-                    Upload Flag <input type="file" id="flag-upload" accept="image/*" class="hidden">
-                </label>
-            </div>
-            <button id="create-nation-btn" class="btn-green w-full py-4 rounded-lg font-bold text-white shadow-lg mt-4">Establish Nation</button>
-        </div>
-    </div>
-
-    <!-- MAIN GAME UI -->
-    <div id="game-ui" class="hidden w-full h-full flex flex-col relative bg-slate-900">
-        
-        <!-- HEADER (Resources) -->
-        <header class="flex-none z-20 border-b border-slate-700 shadow-lg bg-slate-900/90 backdrop-blur">
-            <div class="px-3 py-2 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <img id="nav-flag" src="" class="w-8 h-6 object-cover rounded shadow ring-1 ring-slate-600">
-                    <div class="leading-none">
-                        <div id="nav-nation-name" class="font-bold text-sm text-white">Loading...</div>
-                        <div id="nav-alliance-tag" class="text-[10px] text-blue-400 font-bold">NO ALLIANCE</div>
-                    </div>
-                </div>
-                <div class="text-xs font-mono text-slate-400">Day <span id="game-day">1</span></div>
-            </div>
-            <!-- Resources -->
-            <div class="flex overflow-x-auto py-2 px-2 gap-4 bg-slate-950/50 border-t border-slate-800">
-                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">MONEY</span><span class="font-bold text-emerald-400 text-xs">$<span id="res-money">0</span></span></div>
-                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">FOOD</span><span class="font-bold text-orange-300 text-xs"><span id="res-food">0</span></span></div>
-                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">STEEL</span><span class="font-bold text-slate-300 text-xs"><span id="res-steel">0</span></span></div>
-                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">ALUM</span><span class="font-bold text-slate-400 text-xs"><span id="res-aluminum">0</span></span></div>
-                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">GAS</span><span class="font-bold text-purple-400 text-xs"><span id="res-gasoline">0</span></span></div>
-                <div class="flex flex-col items-center min-w-[60px]"><span class="text-[9px] text-slate-400">AMMO</span><span class="font-bold text-red-400 text-xs"><span id="res-munitions">0</span></span></div>
-            </div>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🏃‍♂️ RunnEep</div>
+            <div class="tagline">Deine persönliche Lauf-App für Fortschritt und Motivation</div>
         </header>
 
-        <!-- CONTENT VIEWS -->
-        <main class="flex-1 overflow-y-auto relative" id="main-scroll">
-            
-            <!-- 1. EMPIRE VIEW -->
-            <div id="view-dashboard" class="p-4 space-y-6 pb-20">
-                <!-- Nation Stats -->
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700 shadow-xl relative overflow-hidden">
-                    <div class="relative z-10 flex justify-between items-end">
-                        <div>
-                            <div class="text-xs font-bold text-blue-400 uppercase tracking-widest">Population</div>
-                            <div class="text-3xl font-black text-white" id="dash-pop">0</div>
-                            <div class="text-xs text-slate-500 mt-1" id="dash-leader">Leader</div>
-                        </div>
-                        <i data-lucide="landmark" class="text-slate-700" size="48"></i>
-                    </div>
-                </div>
-
-                <!-- Military Grid -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase mb-3 ml-1">Military</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="openRecruitModal('soldiers')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
-                            <div><div class="text-[10px] text-slate-400">SOLDIERS</div><div class="font-bold text-white" id="mil-soldiers">0</div></div><i data-lucide="users" class="text-emerald-500" size="18"></i>
-                        </button>
-                        <button onclick="openRecruitModal('tanks')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
-                            <div><div class="text-[10px] text-slate-400">TANKS</div><div class="font-bold text-white" id="mil-tanks">0</div></div><i data-lucide="shield" class="text-blue-500" size="18"></i>
-                        </button>
-                        <button onclick="openRecruitModal('aircraft')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
-                            <div><div class="text-[10px] text-slate-400">JETS</div><div class="font-bold text-white" id="mil-aircraft">0</div></div><i data-lucide="plane" class="text-purple-500" size="18"></i>
-                        </button>
-                        <button onclick="openRecruitModal('ships')" class="game-card p-3 rounded-lg flex justify-between items-center hover:bg-slate-800">
-                            <div><div class="text-[10px] text-slate-400">SHIPS</div><div class="font-bold text-white" id="mil-ships">0</div></div><i data-lucide="anchor" class="text-orange-500" size="18"></i>
-                        </button>
-                    </div>
-                    <!-- SPIES BUTTON -->
-                    <button onclick="openRecruitModal('spies')" class="w-full mt-3 btn-amber p-2 rounded text-xs font-bold text-white shadow-lg flex justify-center items-center gap-2">
-                        <i data-lucide="eye" size="14"></i> TRAIN SPIES (Active: <span id="mil-spies">0</span>)
-                    </button>
-                </div>
-
-                <!-- Cities -->
-                <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase ml-1">Cities</h3>
-                        <button id="found-city-btn" class="text-[10px] bg-blue-600 px-3 py-1 rounded-full font-bold text-white shadow">+ FOUND ($50k)</button>
-                    </div>
-                    <div id="cities-list" class="space-y-4"></div>
-                </div>
+        <div class="auth-section" id="authSection">
+            <div id="loginPrompt">
+                <h2>Willkommen bei RunnEep!</h2>
+                <p style="margin: 15px 0; color: var(--text-secondary);">
+                    Melde dich mit deinem Google-Konto an, um deine Läufe zu speichern und deine Fortschritte zu verfolgen.
+                </p>
+                <button class="btn btn-primary" onclick="signInWithGoogle()">
+                    <i class="fab fa-google"></i> Mit Google anmelden
+                </button>
             </div>
 
-            <!-- 2. WAR VIEW -->
-            <div id="view-war" class="hidden p-4 space-y-4 pb-20">
-                <div class="bg-red-900/20 border border-red-500/30 p-4 rounded-xl">
-                    <h2 class="text-red-500 font-bold text-lg flex items-center gap-2"><i data-lucide="crosshair"></i> War Room</h2>
-                    <p class="text-xs text-red-200/60 mt-1">Global Attack Cooldown: 3 Hours. Same-Target Cooldown: 12 Hours.</p>
-                </div>
-                
-                <!-- SEARCH BAR -->
-                <div class="flex gap-2">
-                    <input type="text" id="war-search-input" placeholder="Search by Nation Name..." class="bg-slate-800 border border-slate-700 text-white rounded p-2 flex-1 text-sm outline-none focus:border-blue-500">
-                    <button onclick="window.searchWar()" class="btn-blue px-4 rounded font-bold text-white text-xs"><i data-lucide="search"></i></button>
-                </div>
-
-                <div id="enemy-list" class="space-y-3"></div>
-            </div>
-
-            <!-- 3. MARKET VIEW -->
-            <div id="view-market" class="hidden p-4 space-y-4 pb-20">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-white font-bold text-lg">Global Exchange</h2>
-                    <button onclick="document.getElementById('sell-modal').classList.remove('hidden')" class="btn-green px-3 py-1 rounded text-xs font-bold text-white">+ SELL</button>
-                </div>
-                <div id="market-list" class="space-y-2">
-                    <div class="text-center py-10"><i class="animate-spin text-slate-600" data-lucide="loader"></i></div>
-                </div>
-            </div>
-
-            <!-- 4. ALLIANCE VIEW -->
-            <div id="view-alliance" class="hidden p-4 space-y-6 pb-20">
-                <!-- If No Alliance -->
-                <div id="no-alliance-ui" class="text-center space-y-4 mt-10">
-                    <i data-lucide="shield-alert" class="mx-auto text-slate-600" size="64"></i>
-                    <p class="text-slate-400 text-sm">You are vulnerable alone.</p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="createAlliancePrompt()" class="btn-blue p-3 rounded font-bold text-white text-sm">Create Alliance</button>
-                        <button onclick="loadAlliancesList()" class="bg-slate-700 p-3 rounded font-bold text-white text-sm">Join Existing</button>
+            <div id="userInfo" style="display: none;">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <h3 id="userName">Benutzer</h3>
+                        <p id="userEmail">email@example.com</p>
                     </div>
-                    <div id="join-alliance-list" class="text-left space-y-2 mt-4"></div>
                 </div>
-                <!-- If In Alliance -->
-                <div id="alliance-ui" class="hidden space-y-6">
+                <button class="btn btn-danger" onclick="signOut()">
+                    <i class="fas fa-sign-out-alt"></i> Abmelden
+                </button>
+            </div>
+        </div>
+
+        <div id="appContent" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('tracking')">
+                    <i class="fas fa-running"></i> Tracking
+                </button>
+                <button class="tab" onclick="switchTab('history')">
+                    <i class="fas fa-history"></i> Verlauf
+                </button>
+                <button class="tab" onclick="switchTab('profile')">
+                    <i class="fas fa-user"></i> Profil
+                </button>
+            </div>
+
+            <div id="trackingTab" class="tab-content active">
+                <div class="card">
+                    <h2>🏃‍♂️ Lauf-Tracking</h2>
                     
-                    <!-- Bank Card -->
-                    <div class="bg-blue-900/30 border border-blue-500/30 p-4 rounded-xl text-center relative overflow-hidden">
-                        <div class="relative z-10">
-                            <h2 id="alliance-name-display" class="text-2xl font-black text-blue-400">ALLIANCE</h2>
-                            <div class="text-xs text-blue-200/60 mt-1">Bank Balance</div>
-                            <div class="font-mono text-3xl text-white font-bold mb-2" id="alliance-bank">$0</div>
-                            <button onclick="depositToBank()" class="text-xs bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white font-bold shadow-lg transition">
-                                <i data-lucide="coins" class="inline w-3 h-3 mr-1"></i> Deposit $10k
-                            </button>
-                            <p class="text-[10px] text-blue-300 mt-2 italic">Funds are used by the leader to buy projects that boost everyone.</p>
+                    <div class="workout-controls">
+                        <button class="btn btn-secondary" id="startBtn" onclick="startWorkout()">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="btn btn-danger" id="stopBtn" onclick="stopWorkout()" disabled>
+                            <i class="fas fa-stop"></i> Stopp
+                        </button>
+                        <button class="btn btn-primary" id="pauseBtn" onclick="pauseWorkout()" disabled>
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                    </div>
+
+                    <div class="status-display">
+                        <h3>Aktuelle Session</h3>
+                        <div class="status-item">
+                            <span class="status-label">⏱️ Zeit</span>
+                            <span class="status-value" id="currentTime">00:00:00</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">📍 Distanz</span>
+                            <span class="status-value" id="currentDistance">0.00 km</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">⚡ Geschwindigkeit</span>
+                            <span class="status-value" id="currentSpeed">0.0 km/h</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">🔥 Tempo</span>
+                            <span class="status-value" id="currentPace">0:00 min/km</span>
                         </div>
                     </div>
 
-                    <!-- Projects Section -->
-                    <div>
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2"><i data-lucide="hammer"></i> Projects (Global Buffs)</h3>
-                        <div id="alliance-projects-list" class="space-y-2">
-                            <!-- Projects injected via JS -->
+                    <div class="status-display">
+                        <h3>GPS-Status</h3>
+                        <div class="status-item">
+                            <span class="status-label">🛰️ Verbindung</span>
+                            <span class="status-value" id="gpsStatus">Warte auf GPS...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">📍 Position</span>
+                            <span class="status-value" id="positionStatus">Nicht verfügbar</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="historyTab" class="tab-content">
+                <div class="card">
+                    <h2>📊 Lauf-Verlauf</h2>
+                    <div id="historyList" class="history-list">
+                        <div class="empty-state">
+                            <i class="fas fa-running"></i>
+                            <h3>Noch keine Läufe</h3>
+                            <p>Starte deinen ersten Lauf und verfolge deine Fortschritte!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profileTab" class="tab-content">
+                <div class="card">
+                    <h2>🏆 Dein Profil</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRuns">0</div>
+                            <div class="stat-label">Gesamtläufe</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalDistance">0.0</div>
+                            <div class="stat-label">Gesamtdistanz (km)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalTime">00:00</div>
+                            <div class="stat-label">Gesamtzeit</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgSpeed">0.0</div>
+                            <div class="stat-label">Ø Geschwindigkeit (km/h)</div>
                         </div>
                     </div>
 
-                    <!-- Members Section -->
-                    <div>
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Members</h3>
-                        <div id="alliance-members-list" class="space-y-2"></div>
+                    <div class="status-display">
+                        <h3>🎯 Persönliche Rekorde</h3>
+                        <div class="status-item">
+                            <span class="status-label">🏃 Längster Lauf</span>
+                            <span class="status-value" id="longestRun">0.00 km</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">⚡ Schnellster Lauf</span>
+                            <span class="status-value" id="fastestPace">0:00 min/km</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">🔥 Beste Distanz</span>
+                            <span class="status-value" id="bestDistance">0.00 km</span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- 5. GLOBAL / LEADERBOARD VIEW -->
-            <div id="view-global" class="hidden p-4 space-y-6 pb-20">
-                
-                <!-- Leaderboard Section -->
-                <div>
-                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2"><i data-lucide="trophy" class="text-yellow-500"></i> World Rankings</h2>
-                    <div id="leaderboard-list" class="space-y-2">
-                        <div class="text-center text-slate-500 py-4">Loading Rankings...</div>
-                    </div>
-                </div>
-
-                <!-- News Feed Section -->
-                <div>
-                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2"><i data-lucide="newspaper"></i> News Feed</h2>
-                    <div id="news-feed" class="space-y-3 font-mono text-xs max-h-60 overflow-y-auto"></div>
-                </div>
-
-                <button id="logout-btn" class="w-full btn-red p-3 rounded font-bold text-white mt-4">LOGOUT</button>
-            </div>
-
-        </main>
-
-        <!-- NAV BAR -->
-        <nav class="flex-none w-full glass-panel flex justify-around items-center h-16 pb-1 z-50 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-            <button onclick="switchView('dashboard')" class="nav-btn text-blue-500 flex flex-col items-center gap-1 w-1/5"><i data-lucide="layout-dashboard" size="20"></i>Empire</button>
-            <button onclick="switchView('war')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="sword" size="20"></i>War</button>
-            <button onclick="switchView('market')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="bar-chart-3" size="20"></i>Market</button>
-            <button onclick="switchView('alliance')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="shield" size="20"></i>Alliance</button>
-            <button onclick="switchView('global')" class="nav-btn flex flex-col items-center gap-1 w-1/5"><i data-lucide="globe" size="20"></i>Global</button>
-        </nav>
-
-        <!-- MODALS -->
-        <!-- Recruit Modal -->
-        <div id="recruit-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700 modal-animate">
-                <h3 class="text-lg font-bold text-white mb-2">Recruit <span id="recruit-type-name" class="capitalize">Units</span></h3>
-                <div id="recruit-cost-display" class="text-xs text-slate-400 mb-4 font-mono"></div>
-                <!-- DISCOUNT DISPLAY -->
-                <div id="recruit-discount-msg" class="hidden text-xs text-green-400 font-bold mb-2">✅ 20% Military Academy Discount Applied</div>
-                
-                <div class="flex gap-2">
-                    <input type="number" id="recruit-amount" value="10" class="bg-slate-900 border border-slate-600 rounded w-20 text-center text-white p-2">
-                    <button id="confirm-recruit-btn" class="flex-1 btn-blue rounded font-bold text-white text-sm">BUY</button>
-                </div>
-                <button onclick="closeModals()" class="w-full mt-2 text-xs text-slate-500 py-2">CANCEL</button>
-            </div>
         </div>
-        
-        <!-- Sell Modal -->
-        <div id="sell-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div class="bg-slate-800 w-full max-w-xs rounded-xl p-6 border border-slate-700 modal-animate">
-                <h3 class="text-lg font-bold text-white mb-4">Post Trade Offer</h3>
-                <div class="space-y-3">
-                    <select id="sell-resource" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
-                        <option value="food">Food</option><option value="steel">Steel</option>
-                        <option value="aluminum">Aluminum</option><option value="gasoline">Gas</option>
-                        <option value="munitions">Ammo</option>
-                    </select>
-                    <input type="number" id="sell-amount" placeholder="Amount (e.g. 100)" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
-                    <input type="number" id="sell-price" placeholder="Total Price ($)" class="w-full bg-slate-900 text-white p-2 rounded border border-slate-600">
-                    <button onclick="postTrade()" class="w-full btn-green p-3 rounded font-bold text-white">POST OFFER</button>
-                </div>
-                <button onclick="closeModals()" class="w-full mt-2 text-xs text-slate-500 py-2">CANCEL</button>
-            </div>
-        </div>
-
-        <!-- Spy Report Modal -->
-        <div id="report-modal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div class="bg-slate-900 w-full max-w-sm rounded-xl p-6 border-2 border-amber-500 modal-animate relative">
-                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-black font-black text-xs px-2 py-1 rounded">TOP SECRET</div>
-                <h3 class="text-xl font-bold text-amber-500 mb-4 flex items-center gap-2"><i data-lucide="eye"></i> INTEL REPORT</h3>
-                <div id="report-content" class="font-mono text-sm text-amber-100 space-y-2 mb-6"></div>
-                <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-full bg-slate-800 hover:bg-slate-700 text-white p-3 rounded font-bold">BURN DOCUMENT</button>
-            </div>
-        </div>
-
     </div>
 
-    <!-- LOGIC SCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp, runTransaction, limit, orderBy, startAt, endAt, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div id="notification" class="notification"></div>
 
-        // --- CONFIG ---
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Konfiguration (ersetzen Sie mit Ihren echten Firebase-Daten)
         const firebaseConfig = {
+
             apiKey: "AIzaSyBHqPKczjs451HSI9NnRDKM7hXtWOwu0f4",
+
             authDomain: "opennations-b73bd.firebaseapp.com",
+
             projectId: "opennations-b73bd",
+
             storageBucket: "opennations-b73bd.firebasestorage.app",
+
             messagingSenderId: "45297560412",
+
             appId: "1:45297560412:web:1ebee9783a042322402f99",
+
             measurementId: "G-3R641VW9RM"
+
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Firebase initialisieren
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // --- GAME DATA ---
-        const GLOBAL_COOLDOWN_MS = 3 * 60 * 60 * 1000; // 3 Hours
-        const TARGET_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12 Hours
-        const BASE_MAX_SLOTS = 30; 
-        const UNIT_STATS = {
-            soldiers: { cost: { money: 100, food: 5, munitions: 1 } },
-            tanks:    { cost: { money: 500, steel: 10, munitions: 5 } },
-            aircraft: { cost: { money: 2000, aluminum: 15, gasoline: 10, munitions: 10 } },
-            ships:    { cost: { money: 5000, steel: 50, gasoline: 20, munitions: 20 } },
-            spies:    { cost: { money: 10000, food: 100 } }
-        };
-        const BUILDING_STATS = {
-            farm: { name: "Farm", cost: 1000 }, steelMill: { name: "Steel Mill", cost: 2500 },
-            bauxiteMine: { name: "Bax. Mine", cost: 3000 }, refinery: { name: "Refinery", cost: 3500 },
-            ammoFactory: { name: "Ammo Fac.", cost: 5000 }, house: { name: "Housing", cost: 500 }
-        };
-        // NEW: Alliance Projects
-        const ALLIANCE_PROJECTS = {
-            wall_street: { name: "Wall Street", cost: 200000, desc: "+20% Money Gen" },
-            iron_dome: { name: "Iron Dome", cost: 500000, desc: "+15% Defense" },
-            industrial_act: { name: "Industrial Act", cost: 300000, desc: "+20% Resource Prod" },
-            green_rev: { name: "Green Revolution", cost: 400000, desc: "+50% Food Prod" },
-            mil_academy: { name: "Military Academy", cost: 750000, desc: "-20% Unit Cost" },
-            urban_plan: { name: "Urban Planning", cost: 1000000, desc: "+5 City Slots" }
+        // App-Status
+        let currentUser = null;
+        let isWorkoutActive = false;
+        let isWorkoutPaused = false;
+        let workoutStartTime = null;
+        let workoutTimer = null;
+        let workoutData = {
+            distance: 0,
+            positions: [],
+            speeds: []
         };
 
-        let user = null, nation = null, alliance = null, uploadedFlag = null, recruitType = null;
+        // Google Auth Provider
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-        // --- UTILS ---
-        const el = (id) => document.getElementById(id);
-        const fmt = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
-        const toast = (msg, type='info') => {
-            const d = document.createElement('div');
-            d.className = `toast px-4 py-2 rounded-lg shadow text-white text-xs font-bold border ${type=='error'?'bg-red-600 border-red-400':'bg-blue-600 border-blue-400'}`;
-            d.innerText = msg; el('toast-container').appendChild(d);
-            setTimeout(() => d.remove(), 3000);
-        };
-        const compress = (file) => new Promise(r => {
-            const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = e => {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = () => {
-                    const c = document.createElement('canvas'); const ctx = c.getContext('2d');
-                    const s = 150; c.width=s; c.height=s; ctx.drawImage(img,0,0,s,s);
-                    r(c.toDataURL('image/jpeg', 0.6));
-                }
+        // Auth-Funktionen
+        function signInWithGoogle() {
+            auth.signInWithPopup(googleProvider)
+                .then((result) => {
+                    showNotification('Erfolgreich angemeldet!', 'success');
+                    updateUI();
+                })
+                .catch((error) => {
+                    console.error('Anmeldefehler:', error);
+                    showNotification('Anmeldung fehlgeschlagen', 'error');
+                });
+        }
+
+        function signOut() {
+            auth.signOut()
+                .then(() => {
+                    showNotification('Erfolgreich abgemeldet', 'info');
+                    updateUI();
+                })
+                .catch((error) => {
+                    console.error('Abmeldfehler:', error);
+                    showNotification('Abmeldung fehlgeschlagen', 'error');
+                });
+        }
+
+        // Auth-Status überwachen
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            updateUI();
+            if (user) {
+                loadUserData();
             }
         });
-        window.closeModals = () => document.querySelectorAll('[id$="-modal"]').forEach(m => m.classList.add('hidden'));
 
-        // --- AUTH ---
-        onAuthStateChanged(auth, async (u) => {
-            el('loading-screen').classList.add('hidden');
-            if(u) { user = u; el('auth-screen').classList.add('hidden'); loadGame(); }
-            else { el('auth-screen').classList.remove('hidden'); }
-        });
-        el('login-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-        el('logout-btn').onclick = () => { signOut(auth); location.reload(); };
+        function updateUI() {
+            const loginPrompt = document.getElementById('loginPrompt');
+            const userInfo = document.getElementById('userInfo');
+            const appContent = document.getElementById('appContent');
 
-        // --- INIT ---
-        async function loadGame() {
-            el('loading-screen').classList.remove('hidden');
-            const snap = await getDoc(doc(db, "nations", user.uid));
-            if(snap.exists()) {
-                nation = snap.data();
-                await loadAlliance(); // Load alliance FIRST for buffs
-                await calcOffline(); 
-                initUI();
-            } else {
-                el('loading-screen').classList.add('hidden');
-                el('create-screen').classList.remove('hidden');
-            }
-        }
-
-        // --- UI ---
-        function initUI() {
-            el('loading-screen').classList.add('hidden');
-            el('create-screen').classList.add('hidden');
-            el('game-ui').classList.remove('hidden');
-            lucide.createIcons();
-            
-            el('nav-nation-name').innerText = nation.name;
-            el('nav-flag').src = nation.flag;
-            el('dash-leader').innerText = nation.leader;
-            el('dash-pop').innerText = fmt(nation.stats?.population || 0);
-            if(nation.military.spies) el('mil-spies').innerText = nation.military.spies;
-            renderResources();
-            loadCities();
-            loadNews();
-        }
-
-        function renderResources() {
-            for(let r in nation.resources) el(`res-${r}`).innerText = fmt(nation.resources[r]);
-            for(let u in nation.military) { if(el(`mil-${u}`)) el(`mil-${u}`).innerText = fmt(nation.military[u]); }
-        }
-
-        // --- CITIES & BUILDING ---
-        function getMaxSlots() {
-            let slots = BASE_MAX_SLOTS;
-            if (alliance?.projects?.urban_plan) slots += 5;
-            return slots;
-        }
-
-        async function loadCities() {
-            const list = el('cities-list'); list.innerHTML = '';
-            const snaps = await getDocs(query(collection(db, "cities"), where("nationId", "==", user.uid)));
-            
-            const currentMax = getMaxSlots();
-
-            snaps.forEach(d => {
-                const c = d.data();
-                let totalBuildings = 0;
-                for(let k in c.buildings) totalBuildings += c.buildings[k];
-                const isFull = totalBuildings >= currentMax;
-                const slotColor = isFull ? 'text-red-500' : 'text-emerald-500';
-
-                let bHtml = '';
-                for(let k in BUILDING_STATS) {
-                    const disabled = isFull ? 'opacity-40 cursor-not-allowed' : 'hover:border-blue-500';
-                    bHtml += `<button onclick="window.build('${d.id}','${k}', ${totalBuildings})" class="bg-slate-800 p-1 rounded border border-slate-700 ${disabled} text-left">
-                        <div class="text-[9px] text-slate-400 uppercase">${BUILDING_STATS[k].name}</div>
-                        <div class="font-bold text-white text-xs">${c.buildings[k]||0}</div>
-                    </button>`;
-                }
-                const div = document.createElement('div');
-                div.className = 'game-card p-3 rounded-xl space-y-2';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-slate-700 pb-1">
-                        <div class="font-bold text-white text-sm">${c.name}</div>
-                        <div class="text-[10px] font-mono ${slotColor}">SLOTS: ${totalBuildings}/${currentMax}</div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-1">${bHtml}</div>`;
-                list.appendChild(div);
-            });
-        }
-
-        window.build = async (cid, type, currentCount) => {
-            const currentMax = getMaxSlots();
-            if (currentCount >= currentMax) return toast("City is FULL! Found a new city.", 'error');
-            
-            const cost = BUILDING_STATS[type].cost;
-            if(nation.resources.money < cost) return toast(`Need $${fmt(cost)}`, 'error');
-            
-            try {
-                nation.resources.money -= cost; 
-                const nationUpdates = { "resources.money": increment(-cost) };
-
-                if(type === 'house') {
-                    const popGain = 100;
-                    nationUpdates["stats.population"] = increment(popGain);
-                    nation.stats.population = (nation.stats.population || 0) + popGain;
-                    el('dash-pop').innerText = fmt(nation.stats.population);
-                }
-
-                await updateDoc(doc(db, "nations", user.uid), nationUpdates);
-                await updateDoc(doc(db, "cities", cid), { [`buildings.${type}`]: increment(1) });
+            if (currentUser) {
+                loginPrompt.style.display = 'none';
+                userInfo.style.display = 'block';
+                appContent.style.display = 'block';
                 
-                renderResources();
-                loadCities(); 
-                toast("Constructed!", 'success');
-            } catch(e){ toast("Error", 'error'); }
-        };
-
-        el('found-city-btn').onclick = async () => {
-            if(nation.resources.money < 50000) return toast("Need $50k", 'error');
-            const n = prompt("City Name:"); if(!n) return;
-            
-            nation.resources.money -= 50000; 
-            nation.stats.population = (nation.stats.population || 0) + 1000; 
-            renderResources();
-            el('dash-pop').innerText = fmt(nation.stats.population);
-
-            await updateDoc(doc(db, "nations", user.uid), { 
-                "resources.money": increment(-50000),
-                "stats.population": increment(1000) 
-            });
-            await addDoc(collection(db, "cities"), { 
-                nationId: user.uid, name: n, 
-                buildings: {house:10, farm:2, steelMill:1, bauxiteMine:0, refinery:0, ammoFactory:1}
-            });
-            loadCities(); logEvent(`${nation.name} founded ${n}`);
-        };
-
-        // --- RECRUIT ---
-        window.openRecruitModal = (type) => {
-            recruitType = type; el('recruit-type-name').innerText = type;
-            let txt = ''; for(let k in UNIT_STATS[type].cost) txt += `${k}: ${UNIT_STATS[type].cost[k]}  `;
-            el('recruit-cost-display').innerText = txt;
-            
-            // Show discount status
-            if(alliance?.projects?.mil_academy) el('recruit-discount-msg').classList.remove('hidden');
-            else el('recruit-discount-msg').classList.add('hidden');
-
-            el('recruit-modal').classList.remove('hidden');
-        };
-
-        el('confirm-recruit-btn').onclick = async () => {
-            const amt = parseInt(el('recruit-amount').value);
-            const unit = UNIT_STATS[recruitType];
-            
-            // Apply Discount?
-            let discount = 1.0;
-            if(alliance?.projects?.mil_academy) discount = 0.8; // 20% off
-
-            const updates = {};
-            for(let r in unit.cost) {
-                const totalCost = Math.floor((unit.cost[r] * amt) * discount);
-                if(nation.resources[r] < totalCost) return toast(`Need more ${r}`, 'error');
-                updates[`resources.${r}`] = increment(-totalCost);
-                nation.resources[r] -= totalCost; // Local update
-            }
-            updates[`military.${recruitType}`] = increment(amt);
-            await updateDoc(doc(db, "nations", user.uid), updates);
-            
-            nation.military[recruitType] = (nation.military[recruitType]||0) + amt;
-            if(recruitType === 'spies') el('mil-spies').innerText = nation.military.spies;
-            renderResources(); closeModals(); toast(`Recruited ${amt} ${recruitType}`, 'success');
-        };
-
-        // --- WAR ---
-        async function loadWar(searchTerm = null) {
-            const list = el('enemy-list'); 
-            list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
-            
-            let q;
-            if (searchTerm) {
-                q = query(collection(db, "nations"), orderBy('name'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'), limit(10));
+                // Benutzerinformationen aktualisieren
+                document.getElementById('userName').textContent = currentUser.displayName || 'Benutzer';
+                document.getElementById('userEmail').textContent = currentUser.email;
+                
+                // Avatar initialisieren
+                const avatar = document.getElementById('userAvatar');
+                avatar.textContent = (currentUser.displayName || 'U')[0].toUpperCase();
+                
+                if (currentUser.photoURL) {
+                    avatar.style.backgroundImage = `url(${currentUser.photoURL})`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                }
             } else {
-                q = query(collection(db, "nations"), orderBy("stats.population", "desc"), limit(10));
+                loginPrompt.style.display = 'block';
+                userInfo.style.display = 'none';
+                appContent.style.display = 'none';
             }
+        }
 
-            const snaps = await getDocs(q);
-            list.innerHTML = '';
+        // Tab-Funktionen
+        function switchTab(tabName) {
+            // Tabs aktualisieren
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            if (snaps.empty) {
-                list.innerHTML = '<div class="text-center text-slate-500">No nations found.</div>';
+            // Aktiven Tab setzen
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Daten laden, wenn benötigt
+            if (tabName === 'history' && currentUser) {
+                loadWorkoutHistory();
+            } else if (tabName === 'profile' && currentUser) {
+                loadProfileStats();
+            }
+        }
+
+        // Workout-Funktionen
+        function startWorkout() {
+            if (!currentUser) {
+                showNotification('Bitte melde dich zuerst an', 'error');
                 return;
             }
 
-            snaps.forEach(d => {
-                if(d.id === user.uid) return;
-                const e = d.data();
-                const div = document.createElement('div');
-                div.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center';
-                div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <img src="${e.flag}" class="w-10 h-6 rounded object-cover bg-black">
-                        <div>
-                            <div class="font-bold text-white text-sm">${e.name}</div>
-                            <div class="text-[10px] text-slate-400">Pop: ${fmt(e.stats.population||0)} | Soldiers: ~${e.military?.soldiers||0}</div>
-                        </div>
-                    </div>
-                    <div class="flex gap-1">
-                        <button onclick="window.spy('${d.id}')" class="bg-amber-600 p-2 rounded text-[10px] font-bold text-white">SPY</button>
-                        <button onclick="window.attack('${d.id}')" class="bg-red-600 p-2 rounded text-[10px] font-bold text-white">ATTACK</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-            lucide.createIcons();
+            isWorkoutActive = true;
+            isWorkoutPaused = false;
+            workoutStartTime = Date.now();
+            workoutData = {
+                distance: 0,
+                positions: [],
+                speeds: []
+            };
+
+            // UI aktualisieren
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = false;
+
+            // Timer starten
+            workoutTimer = setInterval(updateWorkoutDisplay, 1000);
+
+            // GPS-Tracking starten
+            startGPSTracking();
+
+            showNotification('Workout gestartet! 🏃‍♂️', 'success');
         }
 
-        window.searchWar = () => {
-            const term = el('war-search-input').value.trim();
-            if(term) loadWar(term);
-            else loadWar();
-        };
-        
-        window.spy = async (tid) => {
-            if(!nation.military.spies || nation.military.spies < 1) return toast("You must TRAIN SPIES first!", 'error');
-            
-            el('loading-screen').classList.remove('hidden');
-            const isCaught = Math.random() < 0.25; 
-            
-            if(isCaught) {
-                await updateDoc(doc(db, "nations", user.uid), { "military.spies": increment(-1) });
-                nation.military.spies--;
-                el('mil-spies').innerText = nation.military.spies;
-                el('loading-screen').classList.add('hidden');
-                return toast("Spy caught and executed!", 'error');
+        function stopWorkout() {
+            if (!isWorkoutActive) return;
+
+            isWorkoutActive = false;
+            isWorkoutPaused = false;
+
+            // Timer stoppen
+            if (workoutTimer) {
+                clearInterval(workoutTimer);
+                workoutTimer = null;
             }
 
-            const snap = await getDoc(doc(db, "nations", tid));
-            const e = snap.data();
-            el('loading-screen').classList.add('hidden');
-            
-            el('report-content').innerHTML = `
-                <div class="flex justify-between border-b border-amber-500/30 pb-1"><span>TARGET:</span> <span class="text-white">${e.name}</span></div>
-                <div class="flex justify-between"><span>MONEY:</span> <span class="text-white">$${fmt(e.resources.money)}</span></div>
-                <div class="flex justify-between"><span>SOLDIERS:</span> <span class="text-white">${fmt(e.military.soldiers||0)}</span></div>
-                <div class="flex justify-between"><span>TANKS:</span> <span class="text-white">${fmt(e.military.tanks||0)}</span></div>
-                <div class="flex justify-between"><span>AIRCRAFT:</span> <span class="text-white">${fmt(e.military.aircraft||0)}</span></div>
-                <div class="flex justify-between"><span>SHIPS:</span> <span class="text-white">${fmt(e.military.ships||0)}</span></div>
-            `;
-            el('report-modal').classList.remove('hidden');
-        };
+            // GPS-Tracking stoppen
+            stopGPSTracking();
 
-        window.attack = async (tid) => {
-            if(!confirm("Declare WAR?")) return;
-            el('loading-screen').classList.remove('hidden');
+            // Workout speichern
+            saveWorkout();
 
-            try {
-                await runTransaction(db, async (t) => {
-                    const myRef = doc(db,"nations",user.uid);
-                    const meSnap = await t.get(myRef);
-                    const me = meSnap.data();
-                    
-                    const now = Date.now();
-                    const lastGlobal = me.lastAttack?.toMillis() || 0;
-                    if (now - lastGlobal < GLOBAL_COOLDOWN_MS) {
-                        const remaining = Math.ceil((GLOBAL_COOLDOWN_MS - (now - lastGlobal)) / 60000);
-                        throw `Army exhausted! Wait ${Math.floor(remaining/60)}h ${remaining%60}m.`;
-                    }
-                    const lastTarget = me.attackHistory?.[tid]?.toMillis() || 0;
-                    if (now - lastTarget < TARGET_COOLDOWN_MS) {
-                        const remaining = Math.ceil((TARGET_COOLDOWN_MS - (now - lastTarget)) / 60000);
-                        throw `Truce active with this nation! Wait ${Math.floor(remaining/60)}h ${remaining%60}m.`;
-                    }
+            // UI zurücksetzen
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = true;
 
-                    const en = (await t.get(doc(db,"nations",tid))).data();
-                    
-                    const myS = (me.military.soldiers||0)*1 + (me.military.tanks||0)*10 + (me.military.aircraft||0)*20 + (me.military.ships||0)*50;
-                    const enS = (en.military.soldiers||0)*1 + (en.military.tanks||0)*10 + (en.military.aircraft||0)*20 + (en.military.ships||0)*50;
-                    
-                    const myPower = Math.floor(myS * (0.9+Math.random()*0.2));
-                    const enPower = Math.floor(enS * (0.9+Math.random()*0.2));
+            // Display zurücksetzen
+            document.getElementById('currentTime').textContent = '00:00:00';
+            document.getElementById('currentDistance').textContent = '0.00 km';
+            document.getElementById('currentSpeed').textContent = '0.0 km/h';
+            document.getElementById('currentPace').textContent = '0:00 min/km';
 
-                    if(myPower > enPower) {
-                        const loot = Math.floor(en.resources.money * 0.2);
-                        t.update(myRef, { 
-                            "resources.money": increment(loot), 
-                            "military.soldiers": Math.floor(me.military.soldiers*0.95),
-                            lastAttack: serverTimestamp(),
-                            [`attackHistory.${tid}`]: serverTimestamp()
-                        });
-                        t.update(doc(db,"nations",tid), { "resources.money": increment(-loot), "military.soldiers": Math.floor(en.military.soldiers*0.8) });
-                        logEvent(`${me.name} defeated ${en.name} and looted $${fmt(loot)}`);
-                        return {win:true, loot, myPower, enPower};
-                    } else {
-                        t.update(myRef, { 
-                            "military.soldiers": Math.floor(me.military.soldiers*0.8),
-                            lastAttack: serverTimestamp(),
-                            [`attackHistory.${tid}`]: serverTimestamp()
-                        });
-                        logEvent(`${me.name} failed to invade ${en.name}`);
-                        return {win:false, myPower, enPower};
-                    }
-                }).then(res => {
-                    el('loading-screen').classList.add('hidden');
-                    toast(res.win ? `VICTORY! +$${fmt(res.loot)} (Score: ${res.myPower} vs ${res.enPower})` : `DEFEAT (Score: ${res.myPower} vs ${res.enPower})`, res.win?'success':'error');
-                    nation.lastAttack = { toMillis: () => Date.now() }; 
-                });
-            } catch(e) { 
-                el('loading-screen').classList.add('hidden');
-                toast(e.toString(), 'error'); 
-            }
-        };
-
-        // --- MARKET ---
-        async function loadMarket() {
-            const list = el('market-list'); list.innerHTML = '<div class="text-center"><i class="animate-spin" data-lucide="loader"></i></div>';
-            const snaps = await getDocs(query(collection(db, "market"), orderBy("price"), limit(20)));
-            list.innerHTML = '';
-            snaps.forEach(d => {
-                const o = d.data();
-                const div = document.createElement('div');
-                div.className = 'game-card p-3 rounded flex justify-between items-center';
-                div.innerHTML = `<div><div class="font-bold text-white text-sm">${o.amount} ${o.resource.toUpperCase()}</div><div class="text-[10px] text-slate-400">Seller: ${o.sellerName}</div></div>
-                <button onclick="window.buy('${d.id}')" class="btn-green px-3 py-1 rounded text-xs font-bold text-white">$${fmt(o.price)}</button>`;
-                list.appendChild(div);
-            });
-            if(list.innerHTML=='') list.innerHTML = '<div class="text-center text-slate-500 text-xs">Market empty. Be the first to sell!</div>';
+            showNotification('Workout beendet und gespeichert! 🎉', 'success');
         }
-        window.postTrade = async () => {
-            const res = el('sell-resource').value;
-            const amt = parseInt(el('sell-amount').value);
-            const price = parseInt(el('sell-price').value);
-            if(nation.resources[res] < amt) return toast(`Not enough ${res}`, 'error');
+
+        function pauseWorkout() {
+            if (!isWorkoutActive) return;
+
+            isWorkoutPaused = !isWorkoutPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+
+            if (isWorkoutPaused) {
+                clearInterval(workoutTimer);
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> Fortsetzen';
+                showNotification('Workout pausiert', 'info');
+            } else {
+                workoutTimer = setInterval(updateWorkoutDisplay, 1000);
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                showNotification('Workout fortgesetzt', 'info');
+            }
+        }
+
+        function updateWorkoutDisplay() {
+            if (!isWorkoutActive || isWorkoutPaused) return;
+
+            const elapsed = Date.now() - workoutStartTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+
+            document.getElementById('currentTime').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // Distanz und Geschwindigkeit aktualisieren
+            document.getElementById('currentDistance').textContent = workoutData.distance.toFixed(2) + ' km';
             
-            await addDoc(collection(db, "market"), { sellerId: user.uid, sellerName: nation.name, resource: res, amount: amt, price, timestamp: serverTimestamp() });
-            await updateDoc(doc(db, "nations", user.uid), { [`resources.${res}`]: increment(-amt) });
-            nation.resources[res] -= amt; renderResources();
-            closeModals(); loadMarket(); toast("Offer Listed", 'success');
-        };
-        window.buy = async (oid) => {
-            try {
-                await runTransaction(db, async (t) => {
-                    const offerRef = doc(db, "market", oid);
-                    const offer = (await t.get(offerRef)).data();
-                    const me = (await t.get(doc(db, "nations", user.uid))).data();
-                    
-                    if(!offer) throw "Sold!";
-                    if(me.resources.money < offer.price) throw "Too expensive";
-                    
-                    t.update(doc(db, "nations", user.uid), { "resources.money": increment(-offer.price), [`resources.${offer.resource}`]: increment(offer.amount) });
-                    t.update(doc(db, "nations", offer.sellerId), { "resources.money": increment(offer.price) });
-                    t.delete(offerRef);
+            if (workoutData.speeds.length > 0) {
+                const currentSpeed = workoutData.speeds[workoutData.speeds.length - 1];
+                document.getElementById('currentSpeed').textContent = currentSpeed.toFixed(1) + ' km/h';
+                
+                // Tempo berechnen (min/km)
+                if (currentSpeed > 0) {
+                    const pace = 60 / currentSpeed;
+                    const paceMinutes = Math.floor(pace);
+                    const paceSeconds = Math.floor((pace - paceMinutes) * 60);
+                    document.getElementById('currentPace').textContent = 
+                        `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} min/km`;
+                }
+            }
+        }
+
+        // GPS-Funktionen
+        let watchId = null;
+
+        function startGPSTracking() {
+            if (!navigator.geolocation) {
+                showNotification('GPS wird von deinem Browser nicht unterstützt', 'error');
+                return;
+            }
+
+            document.getElementById('gpsStatus').textContent = 'Suche GPS-Signal...';
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    document.getElementById('gpsStatus').textContent = '✅ Verbunden';
+                    document.getElementById('positionStatus').textContent = 
+                        `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
+
+                    // Position speichern
+                    workoutData.positions.push({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        timestamp: Date.now(),
+                        accuracy: position.coords.accuracy
+                    });
+
+                    // Distanz berechnen
+                    if (workoutData.positions.length > 1) {
+                        const lastPos = workoutData.positions[workoutData.positions.length - 2];
+                        const currentPos = workoutData.positions[workoutData.positions.length - 1];
+                        const distance = calculateDistance(lastPos, currentPos);
+                        workoutData.distance += distance;
+
+                        // Geschwindigkeit berechnen
+                        const timeDiff = (currentPos.timestamp - lastPos.timestamp) / 1000; // Sekunden
+                        if (timeDiff > 0) {
+                            const speed = (distance / timeDiff) * 3.6; // km/h
+                            workoutData.speeds.push(speed);
+                        }
+                    }
+                },
+                (error) => {
+                    console.error('GPS-Fehler:', error);
+                    document.getElementById('gpsStatus').textContent = '❌ Fehler';
+                    showNotification('GPS-Fehler: ' + error.message, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function stopGPSTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            document.getElementById('gpsStatus').textContent = 'Inaktiv';
+            document.getElementById('positionStatus').textContent = 'Nicht verfügbar';
+        }
+
+        function calculateDistance(pos1, pos2) {
+            const R = 6371; // Erdradius in km
+            const dLat = (pos2.latitude - pos1.latitude) * Math.PI / 180;
+            const dLon = (pos2.longitude - pos1.longitude) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(pos1.latitude * Math.PI / 180) * Math.cos(pos2.latitude * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Firestore-Funktionen
+        function saveWorkout() {
+            if (!currentUser || workoutData.distance === 0) return;
+
+            const workout = {
+                userId: currentUser.uid,
+                date: new Date().toISOString(),
+                distance: workoutData.distance,
+                duration: Date.now() - workoutStartTime,
+                positions: workoutData.positions,
+                averageSpeed: workoutData.speeds.length > 0 
+                    ? workoutData.speeds.reduce((a, b) => a + b, 0) / workoutData.speeds.length 
+                    : 0,
+                maxSpeed: workoutData.speeds.length > 0 
+                    ? Math.max(...workoutData.speeds) 
+                    : 0
+            };
+
+            db.collection('workouts').add(workout)
+                .then(() => {
+                    console.log('Workout gespeichert');
+                    loadProfileStats(); // Profil-Statistiken aktualisieren
+                })
+                .catch((error) => {
+                    console.error('Fehler beim Speichern:', error);
+                    showNotification('Fehler beim Speichern des Workouts', 'error');
                 });
-                loadMarket(); toast("Purchased!", 'success');
-                nation.resources.money -= offer.price; renderResources(); // Rough local update
-            } catch(e) { toast(e.toString(), 'error'); loadMarket(); }
-        };
+        }
 
-        // --- ALLIANCE & PROJECTS ---
-        async function loadAlliance() {
-            if(nation.allianceId) {
-                const snap = await getDoc(doc(db, "alliances", nation.allianceId));
-                if(snap.exists()) {
-                    alliance = snap.data(); alliance.id = snap.id;
-                    el('nav-alliance-tag').innerText = alliance.name;
-                    el('alliance-name-display').innerText = alliance.name;
-                    el('alliance-bank').innerText = `$${fmt(alliance.bank)}`;
-                    el('no-alliance-ui').classList.add('hidden');
-                    el('alliance-ui').classList.remove('hidden');
-                    
-                    // Render Projects
-                    const pList = el('alliance-projects-list');
-                    pList.innerHTML = '';
-                    const myRole = (alliance.leader === user.uid) ? 'leader' : 'member';
-                    
-                    for(let k in ALLIANCE_PROJECTS) {
-                        const p = ALLIANCE_PROJECTS[k];
-                        const isActive = alliance.projects && alliance.projects[k];
-                        const statusColor = isActive ? 'text-green-400' : 'text-slate-500';
-                        const statusText = isActive ? 'ACTIVE' : (myRole === 'leader' ? `BUY $${fmt(p.cost)}` : 'LOCKED');
-                        const btnClass = isActive ? 'hidden' : (myRole === 'leader' ? 'bg-green-600 hover:bg-green-500' : 'bg-slate-700 cursor-not-allowed');
-                        const action = (myRole === 'leader' && !isActive) ? `onclick="window.buyProject('${k}')"` : '';
+        function loadWorkoutHistory() {
+            if (!currentUser) return;
 
-                        const div = document.createElement('div');
-                        div.className = 'bg-slate-800 p-3 rounded flex justify-between items-center';
-                        div.innerHTML = `
-                            <div>
-                                <div class="text-xs font-bold text-white">${p.name}</div>
-                                <div class="text-[10px] text-slate-400">${p.desc}</div>
+            db.collection('workouts')
+                .where('userId', '==', currentUser.uid)
+                .orderBy('date', 'desc')
+                .get()
+                .then((querySnapshot) => {
+                    const historyList = document.getElementById('historyList');
+                    
+                    if (querySnapshot.empty) {
+                        historyList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-running"></i>
+                                <h3>Noch keine Läufe</h3>
+                                <p>Starte deinen ersten Lauf und verfolge deine Fortschritte!</p>
                             </div>
-                            <button ${action} class="${btnClass} text-[10px] px-3 py-1 rounded text-white font-bold transition">
-                                ${statusText}
-                            </button>
                         `;
-                        pList.appendChild(div);
+                        return;
                     }
 
-                    // Render Members
-                    el('alliance-members-list').innerHTML = alliance.members.map(m => `<div class="bg-slate-800 p-2 rounded text-xs text-white">${m.name}</div>`).join('');
-                }
-            }
-        }
-
-        window.buyProject = async (pKey) => {
-            const p = ALLIANCE_PROJECTS[pKey];
-            if(alliance.bank < p.cost) return toast("Bank lacks funds!", 'error');
-            
-            await updateDoc(doc(db, "alliances", alliance.id), {
-                bank: increment(-p.cost),
-                [`projects.${pKey}`]: true
-            });
-            alliance.bank -= p.cost;
-            if(!alliance.projects) alliance.projects = {};
-            alliance.projects[pKey] = true;
-            loadAlliance();
-            toast(`${p.name} Activated!`, 'success');
-        };
-
-        window.createAlliancePrompt = async () => {
-            const name = prompt("Alliance Name:"); if(!name) return;
-            if(nation.resources.money < 10000) return toast("Need $10k to form alliance", 'error');
-            const ref = await addDoc(collection(db, "alliances"), { name, leader: user.uid, bank: 0, members: [{uid: user.uid, name: nation.name}] });
-            await updateDoc(doc(db, "nations", user.uid), { allianceId: ref.id, "resources.money": increment(-10000) });
-            location.reload();
-        };
-        window.loadAlliancesList = async () => {
-            const list = el('join-alliance-list'); list.innerHTML = 'Loading...';
-            const snaps = await getDocs(query(collection(db, "alliances"), limit(5)));
-            list.innerHTML = '';
-            snaps.forEach(d => {
-                const a = d.data();
-                const btn = document.createElement('button');
-                btn.className = 'w-full bg-slate-800 p-2 rounded mb-2 text-white text-xs flex justify-between';
-                btn.innerHTML = `<span>${a.name}</span> <span>JOIN</span>`;
-                btn.onclick = async () => {
-                    await updateDoc(doc(db, "alliances", d.id), { members: arrayUnion({uid: user.uid, name: nation.name}) });
-                    await updateDoc(doc(db, "nations", user.uid), { allianceId: d.id });
-                    location.reload();
-                };
-                list.appendChild(btn);
-            });
-        };
-        window.depositToBank = async () => {
-            if(nation.resources.money < 10000) return toast("Need $10k", 'error');
-            await updateDoc(doc(db, "nations", user.uid), { "resources.money": increment(-10000) });
-            await updateDoc(doc(db, "alliances", nation.allianceId), { bank: increment(10000) });
-            nation.resources.money -= 10000; renderResources();
-            el('alliance-bank').innerText = `$${fmt(alliance.bank + 10000)}`; alliance.bank += 10000;
-            toast("Deposited", 'success');
-        };
-
-        // --- GLOBAL & NEWS ---
-        async function loadNews() {
-            // Load Events
-            const newsList = el('news-feed');
-            const newsSnaps = await getDocs(query(collection(db, "events"), orderBy("timestamp", "desc"), limit(10)));
-            newsList.innerHTML = '';
-            newsSnaps.forEach(d => {
-                const e = d.data();
-                const div = document.createElement('div');
-                div.className = 'text-slate-300 border-b border-slate-800 pb-1 flex gap-2';
-                div.innerHTML = `<span class="text-slate-500 font-mono text-[10px] whitespace-nowrap">${e.timestamp?.toDate().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})||'Now'}</span> <span>${e.text}</span>`;
-                newsList.appendChild(div);
-            });
-        }
-
-        async function loadLeaderboard() {
-            const list = el('leaderboard-list'); 
-            list.innerHTML = '<div class="text-center text-slate-500 text-xs">Loading ranks...</div>';
-            
-            // Query top 20 by population
-            const snaps = await getDocs(query(collection(db, "nations"), orderBy("stats.population", "desc"), limit(20)));
-            
-            list.innerHTML = '';
-            let rank = 1;
-            snaps.forEach(d => {
-                const n = d.data();
-                const isMe = d.id === user.uid;
-                const row = document.createElement('div');
-                row.className = `flex items-center justify-between p-3 rounded ${isMe ? 'bg-blue-900/40 border border-blue-500' : 'bg-slate-800 border border-slate-700'}`;
-                row.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="text-lg font-black text-slate-500 w-6">#${rank++}</div>
-                        <img src="${n.flag}" class="w-8 h-5 object-cover rounded shadow">
-                        <div>
-                            <div class="font-bold text-white text-sm">${n.name}</div>
-                            <div class="text-[10px] text-slate-400">${n.leader}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-white text-sm">${fmt(n.stats.population)}</div>
-                        <div class="text-[9px] text-slate-500 uppercase">Citizens</div>
-                    </div>
-                `;
-                list.appendChild(row);
-            });
-        }
-
-        async function logEvent(text) {
-            await addDoc(collection(db, "events"), { text, timestamp: serverTimestamp() });
-        }
-
-        // --- OFFLINE CALCULATION ---
-        async function calcOffline() {
-            const now = new Date();
-            const last = nation.lastCollection?.toDate() || now;
-            const mins = Math.min(Math.floor((now - last) / 60000), 1440); // Cap at 24h
-
-            if (mins > 1) {
-                const citiesQ = query(collection(db, "cities"), where("nationId", "==", user.uid));
-                const snaps = await getDocs(citiesQ);
-                const cityCount = snaps.size;
-
-                // BUFFS
-                let moneyMult = 1;
-                let resMult = 1;
-                let foodMult = 1;
-                if(alliance && alliance.projects) {
-                    if(alliance.projects.wall_street) moneyMult = 1.2;
-                    if(alliance.projects.industrial_act) resMult = 1.2;
-                    if(alliance.projects.green_rev) foodMult = 1.5; // NEW
-                }
-
-                let prod = { money: 0, food: 0, steel: 0, aluminum: 0, gasoline: 0, munitions: 0 };
-                snaps.forEach(d => {
-                    const b = d.data().buildings;
-                    if(b.house)       prod.money     += (b.house * (25 + cityCount)) * moneyMult;
-                    if(b.farm)        prod.food      += (b.farm * 1) * foodMult; // Apply Food Buff
-                    if(b.steelMill)   prod.steel     += (b.steelMill * 0.5) * resMult;
-                    if(b.bauxiteMine) prod.aluminum  += (b.bauxiteMine * 0.5) * resMult;
-                    if(b.refinery)    prod.gasoline  += (b.refinery * 0.5) * resMult;
-                    if(b.ammoFactory) prod.munitions += (b.ammoFactory * 0.5) * resMult;
+                    historyList.innerHTML = '';
+                    querySnapshot.forEach((doc) => {
+                        const workout = doc.data();
+                        const workoutElement = createWorkoutElement(workout);
+                        historyList.appendChild(workoutElement);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Fehler beim Laden:', error);
+                    showNotification('Fehler beim Laden des Verlaufs', 'error');
                 });
-
-                const updates = { lastCollection: serverTimestamp() };
-                let msg = "";
-                for(let r in prod) {
-                    const amt = Math.floor(prod[r] * mins);
-                    if(amt > 0) {
-                        updates[`resources.${r}`] = increment(amt);
-                        nation.resources[r] += amt;
-                        msg += `${fmt(amt)} ${r}, `;
-                    }
-                }
-                if(msg !== "") {
-                    await updateDoc(doc(db, "nations", user.uid), updates);
-                    renderResources();
-                    toast(`Offline Gains: ${msg}`, 'success');
-                }
-            }
         }
 
-        // --- INIT CREATE ---
-        el('flag-upload').onchange = async (e) => {
-            const f = e.target.files[0];
-            if(f) {
-                uploadedFlag = await compress(f);
-                el('flag-preview').src = uploadedFlag;
-                el('flag-preview').classList.remove('hidden');
+        function createWorkoutElement(workout) {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            
+            const date = new Date(workout.date);
+            const dateStr = date.toLocaleDateString('de-DE');
+            const timeStr = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            
+            const duration = formatDuration(workout.duration);
+            const pace = workout.averageSpeed > 0 ? formatPace(60 / workout.averageSpeed) : '0:00';
+
+            div.innerHTML = `
+                <div class="history-date">${dateStr} um ${timeStr}</div>
+                <div class="history-stats">
+                    <div class="history-stat">
+                        <div class="history-stat-value">${workout.distance.toFixed(2)} km</div>
+                        <div class="history-stat-label">Distanz</div>
+                    </div>
+                    <div class="history-stat">
+                        <div class="history-stat-value">${duration}</div>
+                        <div class="history-stat-label">Dauer</div>
+                    </div>
+                    <div class="history-stat">
+                        <div class="history-stat-value">${workout.averageSpeed.toFixed(1)} km/h</div>
+                        <div class="history-stat-label">Ø Geschw.</div>
+                    </div>
+                    <div class="history-stat">
+                        <div class="history-stat-value">${pace}</div>
+                        <div class="history-stat-label">Ø Tempo</div>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        function loadProfileStats() {
+            if (!currentUser) return;
+
+            db.collection('workouts')
+                .where('userId', '==', currentUser.uid)
+                .get()
+                .then((querySnapshot) => {
+                    const workouts = [];
+                    querySnapshot.forEach((doc) => {
+                        workouts.push(doc.data());
+                    });
+
+                    updateProfileStats(workouts);
+                })
+                .catch((error) => {
+                    console.error('Fehler beim Laden der Statistiken:', error);
+                });
+        }
+
+        function updateProfileStats(workouts) {
+            if (workouts.length === 0) {
+                document.getElementById('totalRuns').textContent = '0';
+                document.getElementById('totalDistance').textContent = '0.0';
+                document.getElementById('totalTime').textContent = '00:00';
+                document.getElementById('avgSpeed').textContent = '0.0';
+                document.getElementById('longestRun').textContent = '0.00 km';
+                document.getElementById('fastestPace').textContent = '0:00 min/km';
+                document.getElementById('bestDistance').textContent = '0.00 km';
+                return;
             }
-        };
-        el('create-nation-btn').onclick = async () => {
-            const name = el('new-nation-name').value;
-            const leader = el('new-leader-name').value;
-            if(!name) return toast("Name required", 'error');
-            await setDoc(doc(db, "nations", user.uid), {
-                name, leader, flag: uploadedFlag || 'https://lucide.dev/icon.svg',
-                resources: { money: 50000, food: 1000, steel: 100, aluminum: 0, gasoline: 0, munitions: 100 },
-                military: { soldiers: 20 }, stats: { population: 1000 },
-                lastCollection: serverTimestamp()
-            });
-            await addDoc(collection(db, "cities"), { 
-                nationId: user.uid, name: "Capital", 
-                buildings: {house:10,farm:2,steelMill:1,bauxiteMine:0,refinery:0,ammoFactory:1} // Pre-built
-            });
-            logEvent(`New nation ${name} established!`);
-            location.reload();
-        };
 
-        // Navigation
-        window.switchView = (v) => {
-            ['dashboard','war','market','alliance','global'].forEach(id => el('view-'+id).classList.add('hidden'));
-            el('view-'+v).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('text-blue-500'));
-            event.currentTarget.classList.add('text-blue-500');
-            if(v=='war') loadWar();
-            if(v=='market') loadMarket();
-            if(v=='alliance') loadAlliance();
-            if(v=='global') { loadNews(); loadLeaderboard(); }
-        };
+            const totalRuns = workouts.length;
+            const totalDistance = workouts.reduce((sum, w) => sum + w.distance, 0);
+            const totalTime = workouts.reduce((sum, w) => sum + w.duration, 0);
+            const avgSpeed = totalDistance / (totalTime / 3600000); // km/h
+            const longestRun = Math.max(...workouts.map(w => w.distance));
+            const fastestPace = Math.min(...workouts.map(w => w.averageSpeed > 0 ? 60 / w.averageSpeed : Infinity));
 
+            document.getElementById('totalRuns').textContent = totalRuns;
+            document.getElementById('totalDistance').textContent = totalDistance.toFixed(1);
+            document.getElementById('totalTime').textContent = formatDuration(totalTime);
+            document.getElementById('avgSpeed').textContent = avgSpeed.toFixed(1);
+            document.getElementById('longestRun').textContent = longestRun.toFixed(2) + ' km';
+            document.getElementById('fastestPace').textContent = formatPace(fastestPace) + ' min/km';
+            document.getElementById('bestDistance').textContent = longestRun.toFixed(2) + ' km';
+        }
+
+        function loadUserData() {
+            loadProfileStats();
+        }
+
+        // Hilfsfunktionen
+        function formatDuration(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        function formatPace(minutesPerKm) {
+            if (minutesPerKm === Infinity) return '0:00';
+            const paceMinutes = Math.floor(minutesPerKm);
+            const paceSeconds = Math.floor((minutesPerKm - paceMinutes) * 60);
+            return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+        });
     </script>
 </body>
 </html>
-
-

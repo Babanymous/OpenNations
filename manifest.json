@@ -1,21 +1,28 @@
 {
-  "name": "OpenNations Strategy",
-  "short_name": "OpenNations",
-  "start_url": "./index.html",
+  "name": "RunnEep - Deine Lauf-App",
+  "short_name": "RunnEep",
+  "description": "Deine persönliche Lauf-App für Fortschritt und Motivation",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#1f2937",
-  "description": "A real-time strategy game.",
+  "background_color": "#667eea",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://lucide.dev/icon.svg", 
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxwYXRoIGQ9Ik05NiA0OEMxMjAuNSA0OCAxNDAgNjcuNSAxNDAgOTJDMTQwIDExNi41IDEyMC41IDEzNiA5NiAxMzZDNzEuNSAxMzYgNTIgMTE2LjUgNTIgOTJDUzIgNjcuNSA3MS41IDQ4IDk2IDQ4WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTc2IDkyQzc2IDgzLjE2IDgzLjE2IDc2IDkyIDc2QzEwMC44NCA3NiAxMDggODMuMTYgMTA4IDkyQzEwOCAxMDAuODQgMTAwLjg0IDEwOCA5MiAxMDhDODMuMTYgMTA4IDc2IDEwMC44NCA3NiA5MloiIGZpbGw9IiM0RjQ2RTUiLz4KPHN2ZyBpZD0iZ3JhZGllbnQwX2xpbmVhcl8xXzEiPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyXzFfMSIgeDE9IjAiIHkxPSIwIiB4Mj0iMTkyIiB5Mj0iMTkyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM2NjdlZWEiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNzY0YmEyIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "https://lucide.dev/icon.svg", 
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxwYXRoIGQ9Ik0yNTYgMTI4QzM0MCAxMjggNDA4IDE5NiA0MDggMjgwQzQwOCAzNjQgMzQwIDQzMiAyNTYgNDMyQzE3MiA0MzIgMTA0IDM2NCAxMDQgMjhDMTA0IDE5NiAxNzIgMTI4IDI1NiAxMjhaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjA0IDI4MEMyMDQgMjIyLjYgMjIyLjYgMjA0IDI1NiAyMDRDMjg5LjQgMjA0IDMwOCAyMjIuNiAzMDggMjgwQzMwOCAzMzcuNCAyODkuNCAzNTYgMjU2IDM1NkMyMjIuNiAzNTYgMjA0IDMzNy40IDIwNCAyODBaIiBmaWxsPSIjNEY0NkU1Ii8+CjxzdmcgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIj4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQwX2xpbmVhcl8xXzEiIHgxPSIwIiB5MT0iMCIgeDI9IjUxMiIgeTI9IjUxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjNjY3ZWVhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzc2NGJhMiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
-  ]
+  ],
+  "permissions": [
+    "geolocation",
+    "storage"
+  ],
+  "scope": "/",
+  "lang": "de"
 }
