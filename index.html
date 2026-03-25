@@ -28,22 +28,17 @@
             startOnLoad: true, 
             theme: 'base',
             flowchart: { 
-                useMaxWidth: false,
-                htmlLabels: true,
-                curve: 'basis'
+                curve: 'basis',
+                rankSpacing: 60,
+                nodeSpacing: 40
             },
             themeVariables: {
                 primaryColor: '#f1f5f9',
                 primaryTextColor: '#1e293b',
                 primaryBorderColor: '#94a3b8',
                 lineColor: '#64748b',
-                secondaryColor: '#fef2f2',
-                tertiaryColor: '#fff7ed',
-                clusterBkg: '#f8fafc',
-                clusterBorder: '#cbd5e1',
-                titleColor: '#1e293b',
-                edgeLabelBackground: '#ffffff',
-                fontFamily: 'Segoe UI, Roboto, sans-serif',
+                secondaryColor: '#eff6ff',
+                tertiaryColor: '#fef2f2',
                 fontSize: '13px'
             }
         });
@@ -53,9 +48,7 @@
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         .card-hover { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
-        .mermaid svg { max-width: 100%; }
-        /* Make the diagram scrollable on small screens */
-        .diagram-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     </style>
 </head>
 <body class="bg-history-50 text-history-800 antialiased">
@@ -63,348 +56,180 @@
     <!-- Header -->
     <header class="bg-history-900 text-white py-16 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-                Die Weltwirtschaftskrise
-            </h1>
-            <p class="text-xl md:text-2xl font-light text-slate-300 mb-8">
-                Verlauf, Ursachen und Verflechtungen bis Sommer 1931
-            </p>
-            <div class="flex justify-center space-x-4 flex-wrap gap-y-3">
-                <a href="#diagramm" class="bg-history-accent hover:bg-red-800 text-white font-semibold py-2 px-6 rounded-full transition duration-300">
-                    Zum Diagramm
-                </a>
-                <a href="#details" class="bg-transparent border border-white hover:bg-white hover:text-history-900 font-semibold py-2 px-6 rounded-full transition duration-300">
-                    Zu den Details
-                </a>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Die Weltwirtschaftskrise</h1>
+            <p class="text-xl md:text-2xl font-light text-slate-300 mb-8">Verlauf, Ursachen und Verflechtungen bis Sommer 1931</p>
+            <div class="flex justify-center space-x-4 flex-wrap gap-y-2">
+                <a href="#diagramm" class="bg-history-accent hover:bg-red-800 text-white font-semibold py-2 px-6 rounded-full transition duration-300">Zum Diagramm</a>
+                <a href="#details" class="bg-transparent border border-white hover:bg-white hover:text-history-900 font-semibold py-2 px-6 rounded-full transition duration-300">Zu den Details</a>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
-        <!-- Legende -->
-        <section class="mb-8">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Legende des Diagramms</h3>
-                <div class="flex flex-wrap gap-4 text-sm">
-                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-200 inline-block border border-slate-300"></span> Voraussetzungen (1920er)</span>
-                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-blue-100 inline-block border border-blue-300"></span> Ursachen & Auslöser</span>
-                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-amber-100 inline-block border border-amber-300"></span> Verlauf USA</span>
-                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-orange-100 inline-block border border-orange-300"></span> Verlauf Europa</span>
-                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-red-100 inline-block border border-red-300"></span> Verlauf Deutschland</span>
-                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-purple-100 inline-block border border-purple-300"></span> Politische Folgen</span>
-                    <span class="flex items-center gap-2"><span class="text-slate-500 font-bold">→</span> direkte Wirkung &nbsp; <span class="text-slate-400">- -&gt;</span> indirekte / internationale Übertragung</span>
-                </div>
-            </div>
-        </section>
 
-        <!-- Diagramm -->
+        <!-- Diagram Section -->
         <section id="diagramm" class="mb-20">
-            <div class="flex items-center mb-6">
+            <div class="flex items-center mb-4">
                 <div class="w-8 h-8 rounded-full bg-history-accent text-white flex items-center justify-center font-bold mr-3">1</div>
                 <h2 class="text-3xl font-bold border-b-2 border-history-accent pb-2 inline-block">Visuelle Strukturskizze</h2>
             </div>
-            <p class="text-slate-600 mb-6">Das Diagramm zeigt Voraussetzungen, Ursachen, den chronologischen Verlauf in den USA, Europa und Deutschland sowie die politischen Folgen – mit allen wichtigen Querverbindungen.</p>
-            
-            <div class="bg-white p-4 md:p-8 rounded-2xl shadow-xl border border-slate-100 diagram-scroll">
+            <p class="text-slate-600 mb-3">Das Flussdiagramm zeigt Ursachen, Verlauf, Verflechtungen und Folgen der Weltwirtschaftskrise \u2013 inklusive der wichtigsten Wechselwirkungen (gestrichelte Pfeile).</p>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap gap-4 mb-6 text-sm text-slate-600">
+                <span class="flex items-center"><span class="legend-dot bg-blue-200 border border-blue-400"></span> Ursachen</span>
+                <span class="flex items-center"><span class="legend-dot bg-yellow-100 border border-amber-400"></span> Chronologischer Verlauf</span>
+                <span class="flex items-center"><span class="legend-dot bg-pink-100 border border-pink-400"></span> Verflechtungen USA\u2013Deutschland</span>
+                <span class="flex items-center"><span class="legend-dot bg-green-100 border border-green-500"></span> Folgen &amp; Konsequenzen</span>
+                <span class="flex items-center"><span style="display:inline-block;width:30px;height:2px;background:repeating-linear-gradient(90deg,#64748b 0 4px,transparent 4px 8px);margin-right:6px;vertical-align:middle;"></span> Kausale Wechselwirkung</span>
+            </div>
+
+            <div class="bg-white p-4 md:p-8 rounded-2xl shadow-xl overflow-x-auto border border-slate-100">
                 <div class="mermaid">
 graph TD
+    Root["\ud83c\udf0d Weltwirtschaftskrise\n1929 \u2013 Sommer 1931"]
 
-    %% ============================================================
-    %%  ZENTRUM
-    %% ============================================================
-    Root(["🌐 Weltwirtschaftskrise\n1929 – Sommer 1931"])
+    Root --> U["\ud83d\udccc 1. Ursachen & Strukturelle Schw\u00e4chen"]
 
-    %% ============================================================
-    %%  SUBGRAPH 1: VORAUSSETZUNGEN 1920er
-    %% ============================================================
-    subgraph PRE ["⚙️  Voraussetzungen — 1920er Jahre"]
-        direction TB
-        PR1["Goldstandard-System\nStarres, inflexibles Währungsgefüge"]
-        PR2["Ungleiche Einkommensverteilung USA\nÜberproduktion trifft auf Kaufkraftlücke"]
-        PR3["Dawes-Plan 1924\nUS-Kredite → DE · DE-Reparationen → F & GB"]
-        PR4["Agrarkrise seit 1925\nFallende Rohstoffpreise weltweit"]
-        PR5["Young-Plan 1929\nNeugeregelte, langfristig gestreckte Reparationen"]
-    end
+    U --> U_USA["\ud83c\uddfa\ud83c\uddf8 Ursachen in den USA"]
+    U_USA --> U1["Spekulative B\u00f6rsenblase\nAktienk\u00e4ufe auf Kredit"]
+    U_USA --> U2["Massiver Konsumkreditboom\nder 1920er Jahre"]
+    U_USA --> U3["\u00dcberproduktion in Industrie\n& Landwirtschaft"]
+    U_USA --> U4["Ungleiche Einkommensverteilung\n\u2192 Schwache Binnennachfrage"]
 
-    %% ============================================================
-    %%  SUBGRAPH 2: URSACHEN
-    %% ============================================================
-    subgraph URS ["🔍  Ursachen & Auslöser"]
-        direction TB
-        U1["Spekulationsblase Wall Street\nAktienkäufe auf Kredit (buying on margin)"]
-        U2["Europäische Strukturschwächen\nKriegsfolgen, Reparationslast, Agrarkrise"]
-        U3["Protektionismus\nBeggar-my-neighbour-Politik & Zollkriege"]
-        U4["Kreditdrosselung 1928\nUS-Kapital bleibt in USA — erste Warnsignale für DE"]
-    end
+    U --> U_INT["\ud83c\udf10 Internationale Strukturprobleme"]
+    U_INT --> U5["Instabiler Goldstandard\nWenig Flexibilit\u00e4t der W\u00e4hrungen"]
+    U_INT --> U6["Reparationsforderungen\naus dem Versailler Vertrag"]
+    U_INT --> U7["Ungel\u00f6ste Kriegsschulden\nder Alliierten an die USA"]
+    U_INT --> U8["Agrarkrise in Osteuropa\n& \u00dcberschuldung der Bauern"]
 
-    %% ============================================================
-    %%  SUBGRAPH 3: VERLAUF USA
-    %% ============================================================
-    subgraph USA ["🇺🇸  Verlauf — Vereinigte Staaten"]
-        direction TB
-        A1["24. Okt 1929 — Schwarzer Donnerstag\nDow Jones −11 % · 13 Mio. Aktien in einer Stunde"]
-        A2["25. Okt 1929 — Schwarzer Freitag\nMassenpanik · Kurse halbieren sich binnen Wochen"]
-        A3["1930 — Erste Bankenwelle\n1.300 US-Banken schließen · Spareinlagen vernichtet"]
-        A4["Juni 1930 — Smoot-Hawley Act\nZölle auf 20.000 Waren · Welthandel schrumpft um 40 %"]
-        A5["1931 — Zweite Bankenwelle\nWeitere 2.000 Banken insolvent · Kreditklemme"]
-        A6["1932 — Wirtschaftlicher Tiefpunkt USA\n25 % Arbeitslosigkeit · BIP um 30 % gesunken"]
-    end
+    U --> U_POL["\ud83c\udfdb\ufe0f Politische Fehler"]
+    U_POL --> U9["Protektionismus & Zollerh\u00f6hungen\nSmoot-Hawley Tariff 1930"]
+    U_POL --> U10["Mangelnde internationale\nKooperation & Koordination"]
+    U_POL --> U11["Deflationspolitik der\nZentralbanken \u2014 falsche Reaktion"]
 
-    %% ============================================================
-    %%  SUBGRAPH 4: VERLAUF EUROPA
-    %% ============================================================
-    subgraph EUR ["🇪🇺  Verlauf — Europa"]
-        direction TB
-        E1["Mai 1931 — Pleite Credit-Anstalt Wien\nGrößte österr. Bank kollabiert · Panik in Mitteleuropa"]
-        E2["Juni 1931 — Hoover-Moratorium\nEinjähriger Zahlungsstopp Reparationen & Kriegsschulden"]
-        E3["Juli–Aug 1931 — Pfundkrise\nBank of England verliert massiv Goldreserven"]
-        E4["Sept 1931 — GB verlässt Goldstandard\n14 weitere Länder folgen binnen Monaten"]
-    end
+    Root --> V["\ud83d\udcc5 2. Chronologischer Verlauf"]
 
-    %% ============================================================
-    %%  SUBGRAPH 5: VERLAUF DEUTSCHLAND
-    %% ============================================================
-    subgraph DEU ["🇩🇪  Verlauf — Deutschland"]
-        direction TB
-        D1["1929–1930 — Massiver Kreditabzug\nUS-Banken kündigen kurzfristige Darlehen"]
-        D2["1930 — Brüning-Kabinett\nDeflationspolitik · Sparpakete · Art.-48-Notverordnungen"]
-        D3["Sept 1930 — Reichstagswahl\nNSDAP: 2,6 % → 18,3 % · Kommunisten verdoppeln sich"]
-        D4["Juli 1931 — Pleite Danat-Bank\nMassenansturm auf alle deutschen Banken"]
-        D5["Juli 1931 — Bankfeiertage\n2-tägige Zwangsschließung aller dt. Banken"]
-        D6["1931 — Standstill-Abkommen\nAuslandskredite auf 6 Monate eingefroren"]
-        D7["1932 — Massenarbeitslosigkeit\n6 Mio. Arbeitslose · ca. 30 % der Erwerbstätigen"]
-    end
+    V --> V1["Okt. 1929: B\u00f6rsencrash NY\nSchwarzer Donnerstag 24.10.\nSchwarzer Freitag 25.10."]
+    V1 --> V1a["Dow Jones \u221289 % bis 1932\nVernichtung von ~30 Mrd. US-$"]
 
-    %% ============================================================
-    %%  SUBGRAPH 6: POLITISCHE FOLGEN
-    %% ============================================================
-    subgraph POL ["⚡  Politische Folgen"]
-        direction TB
-        F1["März 1930 — Ende der Großen Koalition\nScheitern am Streit über Arbeitslosenversicherung"]
-        F2["Brüning regiert per Notverordnung\nParlamentsumgehung · Demokratie ausgehöhlt"]
-        F3["Radikalisierung der Bevölkerung\nHunger, Hoffnungslosigkeit, Extremismus"]
-        F4["NSDAP-Aufstieg zur Massenpartei\nHitler als Kandidat der Verzweifelten"]
-        F5["Erosion der Weimarer Republik\nBoden bereitet für Machtergreifung Jan 1933"]
-    end
+    V1 --> V2["1930: US-Wirtschaft bricht ein\nIndustrie \u221250 %, Massenentlassungen"]
+    V2 --> V2a["Bankenwelle I in USA 1930\n\u00dcber 1.300 Banken schlie\u00dfen"]
+    V2 --> V2b["Smoot-Hawley Act Juni 1930\nWelthandel bricht drastisch ein"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Voraussetzungen → Ursachen
-    %% ============================================================
-    PR1 --> U2
-    PR2 --> U1
-    PR3 --> U4
-    PR3 --> D1
-    PR4 --> U2
-    PR5 --> D1
+    V2 --> V3["Fr\u00fchjahr 1931: Krise greift\nauf Europa \u00fcber"]
+    V3 --> V3a["Mai 1931: Pleite der\nCredit-Anstalt Wien\nGr\u00f6\u00dfte \u00f6sterr. Bank"]
+    V3a --> V3b["Kapitalflucht aus\nMittel- & Osteuropa"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Root
-    %% ============================================================
-    Root --> PRE
-    Root --> A1
+    V3 --> V4["Sommer 1931:\nBankenkrise in Deutschland\neskaliert"]
+    V4 --> V4a["Juli 1931: Pleite Danat-Bank\nDarmst\u00e4dter und Nationalbank"]
+    V4 --> V4b["13.\u201314. Juli 1931\nBankfeiertage & Schlie\u00dfungen"]
+    V4 --> V4c["Hoover-Moratorium Juni 1931\nSchuldenaufschub \u2014 zu sp\u00e4t"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Ursachen → Verlauf USA
-    %% ============================================================
-    U1 --> A1
-    U4 --> A1
-    U3 --> A4
+    Root --> D["\ud83d\udd17 3. Verflechtungen\nUSA \u2013 Deutschland"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — USA intern (chronologisch)
-    %% ============================================================
-    A1 --> A2
-    A2 --> A3
-    A3 --> A4
-    A4 --> A5
-    A5 --> A6
+    D --> D0["Dawes-Plan 1924\nYoung-Plan 1929\nUS-Kredite finanzieren\ndt. Reparationen"]
+    D0 --> D1["1920er: Dt. Wirtschaft\nextrem abh\u00e4ngig von\nkurzfristigen US-Krediten"]
+    D1 --> D1a["Kreislauf:\nUS-Kapital \u2192 Dt. \u2192 Reparationen\n\u2192 Alliierte \u2192 USA"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — USA → Europa (internationale Übertragung)
-    %% ============================================================
-    A2 -.->|"Vertrauensverlust · Kreditrückzug"| E1
-    A4 -.->|"Welthandel −40 %"| E3
-    A5 -.->|"2. Kreditwelle"| E1
+    D1 --> D2["Ab 1929: Massiver Abzug\nvon US-Kapital aus Dt."]
+    D2 --> D2a["Dt. Banken hatten Kredite\nmit langen Laufzeiten vergeben\n\u2192 Liquidit\u00e4tsproblem"]
+    D2 --> D2b["Fehlendes Eigenkapital\nder dt. Banken\nverst\u00e4rkt die Krise"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — USA → Deutschland (internationale Übertragung)
-    %% ============================================================
-    A2 -.->|"US-Banken kündigen dt. Kredite"| D1
-    A5 -.->|"Erneuter Kreditabzug"| D4
-    A6 -.->|"Welthandelsrückgang trifft DE-Export"| D7
+    D2 --> D3["Wirtschaftlicher Kollaps in Dt.\nProduktion sinkt\nArbeitslosigkeit steigt"]
+    D3 --> D3a["1932: ca. 6 Mio. Arbeitslose\nofiziell \u2014 real ca. 8 Mio."]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Europa intern
-    %% ============================================================
-    E1 --> E2
-    E2 --> E3
-    E3 --> E4
+    Root --> F["\u26a0\ufe0f 4. Folgen &\npolitische Konsequenzen"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Europa → Deutschland
-    %% ============================================================
-    E1 -.->|"Bankenpanikkaskade Mitteleuropa"| D4
-    E2 --> D2
+    F --> F1["Soziale Verelendung\nMassenarbeitslosigkeit & Armut"]
+    F1 --> F1a["Suppenk\u00fcchen, Notunterk\u00fcnfte\nRadikalisierung der Bev\u00f6lkerung"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Deutschland intern
-    %% ============================================================
-    D1 --> D2
-    D2 --> D3
-    D2 --> D4
-    D4 --> D5
-    D5 --> D6
-    D5 --> D7
+    F --> F2["Politische Destabilisierung\nder Weimarer Republik"]
+    F2 --> F2a["M\u00e4rz 1930: Ende der GroKo\nBr\u00fcning regiert per Notverordnung"]
+    F2 --> F2b["Sept. 1930: Reichstagswahl\nNSDAP 2,6 % \u2192 18,3 %"]
 
-    %% ============================================================
-    %%  VERBINDUNGEN — Deutschland → Politik
-    %% ============================================================
-    D3 --> F1
-    D7 --> F3
-    F1 --> F2
-    F2 --> F3
-    F3 --> F4
-    F4 --> F5
+    F --> F3["Aufstieg der Extremparteien\nNSDAP & KPD gewinnen massiv"]
+    F3 --> F3a["Jan. 1933:\nHitler wird Reichskanzler"]
 
-    %% ============================================================
-    %%  KNOTENFARBEN (classDef)
-    %% ============================================================
-    classDef root fill:#1e293b,stroke:#1e293b,color:#fff,font-weight:bold,font-size:14px
-    classDef pre fill:#e2e8f0,stroke:#94a3b8,color:#1e293b
-    classDef urs fill:#dbeafe,stroke:#3b82f6,color:#1e293b
-    classDef usa fill:#fef3c7,stroke:#d97706,color:#1e293b
-    classDef eur fill:#ffedd5,stroke:#ea580c,color:#1e293b
-    classDef deu fill:#fee2e2,stroke:#dc2626,color:#1e293b
-    classDef pol fill:#f3e8ff,stroke:#7c3aed,color:#1e293b
+    F --> F4["Internationale Folgen"]
+    F4 --> F4a["Welthandel \u221265 % bis 1933"]
+    F4 --> F4b["Ende des Goldstandards\nin vielen L\u00e4ndern 1931\u201333"]
 
-    class Root root
-    class PR1,PR2,PR3,PR4,PR5 pre
-    class U1,U2,U3,U4 urs
-    class A1,A2,A3,A4,A5,A6 usa
-    class E1,E2,E3,E4 eur
-    class D1,D2,D3,D4,D5,D6,D7 deu
-    class F1,F2,F3,F4,F5 pol
+    U1 -.->|"Blase platzt"| V1
+    U3 -.->|"Keine K\u00e4ufer mehr"| V2
+    U9 -.->|"Welthandel schrumpft"| V2b
+    U11 -.->|"Kreditklemme"| V2a
+    U5 -.->|"Keine Abwertung m\u00f6glich"| V3b
+    V1 -.->|"Kreditr\u00fcckruf aus Dt."| D2
+    V2a -.->|"Panik erfasst Europa"| V3a
+    D1a -.->|"Kreislauf bricht ab"| D2
+    D3 -.->|"Massenarmut & Not"| F1
+    D3a -.->|"Wirtschaftliche Not"| F2
+    V4a -.->|"Systemvertrauensverlust"| F2b
+    F2b -.->|"Demokratieversagen"| F3a
+    U6 -.->|"Schulden belasten Dt."| D0
+    U7 -.->|"R\u00fcckzahlungsdruck"| U9
                 </div>
             </div>
         </section>
 
-        <!-- Detaillierte Analyse -->
+        <!-- Detail Cards Section -->
         <section id="details" class="mb-12">
             <div class="flex items-center mb-8">
                 <div class="w-8 h-8 rounded-full bg-history-accent text-white flex items-center justify-center font-bold mr-3">2</div>
                 <h2 class="text-3xl font-bold border-b-2 border-history-accent pb-2 inline-block">Detaillierte Analyse</h2>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-                <!-- Card: Voraussetzungen -->
-                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-slate-400 card-hover">
-                    <div class="text-slate-500 mb-4">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-history-900 mb-4">⚙️ Voraussetzungen (1920er)</h3>
-                    <ul class="space-y-3 text-slate-600 text-sm">
-                        <li class="flex items-start"><span class="text-slate-400 font-bold mr-2">•</span><span><strong>Goldstandard:</strong> Inflexibles Währungssystem hinderte Zentralbanken an expansiver Geldpolitik.</span></li>
-                        <li class="flex items-start"><span class="text-slate-400 font-bold mr-2">•</span><span><strong>Dawes-Plan 1924:</strong> Künstlicher Kapitalkreislauf – US-Kredite → DE-Reparationen → Alliierte → US-Kriegsschulden.</span></li>
-                        <li class="flex items-start"><span class="text-slate-400 font-bold mr-2">•</span><span><strong>Ungleiche Verteilung:</strong> Gewinne flossen in Spekulation, nicht in Lohnerhöhungen → Überproduktionskrise.</span></li>
-                        <li class="flex items-start"><span class="text-slate-400 font-bold mr-2">•</span><span><strong>Agrarkrise:</strong> Rohstoffpreise sinken seit 1925 global, schwächt Export-/Schwellenländer.</span></li>
-                    </ul>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                <!-- Card: Ursachen -->
+                <!-- Card 1: Ursachen -->
                 <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-blue-500 card-hover">
                     <div class="text-blue-500 mb-4">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-history-900 mb-4">🔍 Ursachen & Auslöser</h3>
+                    <h3 class="text-xl font-bold text-history-900 mb-4">A. Ursachen & Hintergrund</h3>
                     <ul class="space-y-3 text-slate-600 text-sm">
-                        <li class="flex items-start"><span class="text-blue-400 font-bold mr-2">•</span><span><strong>Spekulationsblase:</strong> Aktienkäufe „on margin" (10 % Eigenkapital), massive Überbewertung.</span></li>
-                        <li class="flex items-start"><span class="text-blue-400 font-bold mr-2">•</span><span><strong>Strukturschwächen Europa:</strong> Reparationslast, unbewältigte Kriegsfolgen, Deflationsdruck.</span></li>
-                        <li class="flex items-start"><span class="text-blue-400 font-bold mr-2">•</span><span><strong>Kreditdrosselung 1928:</strong> US-Kapital bleibt im Inland → erste Liquiditätsprobleme in Deutschland.</span></li>
-                        <li class="flex items-start"><span class="text-blue-400 font-bold mr-2">•</span><span><strong>Protektionismus:</strong> Zollmauern verhinderten Handelsausgleich und verstärkten Krisespirale.</span></li>
+                        <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">\ud83c\uddfa\ud83c\uddf8</span><span><strong>Spekulationsblase:</strong> Aktienk\u00e4ufe massiv auf Kredit, \u00dcberproduktion in Industrie & Landwirtschaft, ungleiche Einkommensverteilung schw\u00e4chte die Binnennachfrage.</span></li>
+                        <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">\ud83c\udf10</span><span><strong>Goldstandard:</strong> Starre Wechselkurse verhinderten wirtschaftliche Anpassungen; strukturelle Schuldenkonflikte seit dem Versailler Vertrag belasteten Europa.</span></li>
+                        <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">\ud83c\udfdb\ufe0f</span><span><strong>Smoot-Hawley (1930):</strong> Massive US-Zollerh\u00f6hungen l\u00f6sten weltweite Vergeltungsz\u00f6lle aus und lie\u00dfen den Welthandel kollabieren.</span></li>
+                        <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">\ud83d\udcc9</span><span><strong>Deflationspolitik:</strong> Zentralbanken reagierten mit Geldmengenverknappung statt Expansion \u2014 eine verh\u00e4ngnisvolle Fehlentscheidung.</span></li>
                     </ul>
                 </div>
 
-                <!-- Card: Verlauf USA -->
+                <!-- Card 2: Chronologie -->
                 <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-amber-500 card-hover">
                     <div class="text-amber-500 mb-4">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-history-900 mb-4">🇺🇸 Verlauf USA</h3>
-                    <ul class="space-y-3 text-slate-600 text-sm">
-                        <li class="flex items-start"><span class="text-amber-400 font-bold mr-2 shrink-0">Okt '29</span><span>Schwarzer Donnerstag &amp; Freitag – Kurssturz, Massenpanik an der Wall Street.</span></li>
-                        <li class="flex items-start"><span class="text-amber-400 font-bold mr-2 shrink-0">1930</span><span>Erste Bankenwelle: 1.300 Banken schließen. Smoot-Hawley Act lähmt Welthandel.</span></li>
-                        <li class="flex items-start"><span class="text-amber-400 font-bold mr-2 shrink-0">1931</span><span>Zweite Bankenwelle: 2.000 weitere Banken insolvent → totale Kreditklemme.</span></li>
-                        <li class="flex items-start"><span class="text-amber-400 font-bold mr-2 shrink-0">1932</span><span>Tiefpunkt: 25 % Arbeitslose, BIP um 30 % unter Vorkrisenstand.</span></li>
-                    </ul>
+                    <h3 class="text-xl font-bold text-history-900 mb-4">B. Chronologie der Eskalation</h3>
+                    <ol class="space-y-3 text-slate-600 text-sm">
+                        <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 min-w-fit">Okt. 1929</span><span>B\u00f6rsencrash in New York. Dow Jones verliert bis 1932 fast 89 % seines Werts, Kapitalvernichtung in Milliardenh\u00f6he.</span></li>
+                        <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 min-w-fit">1930</span><span>Krise erfasst US-Realwirtschaft. Erste Bankenwelle: \u00fcber 1.300 Schlie\u00dfungen. Smoot-Hawley Tariff beschleunigt Welthandelsr\u00fcckgang.</span></li>
+                        <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 min-w-fit">Mai 1931</span><span>Pleite der \u00d6sterreichischen Credit-Anstalt \u2014 Startschuss der europ\u00e4ischen Bankenkrise. Kapitalflucht setzt ein.</span></li>
+                        <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 min-w-fit">Juni 1931</span><span>Hoover-Moratorium: Schuldenaufschub f\u00fcr Deutschland \u2014 kommt zu sp\u00e4t, um die Bankenkrise zu stoppen.</span></li>
+                        <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 min-w-fit">Juli 1931</span><span>Danat-Bank bricht zusammen. Bankfeiertage (13./14. Juli). Das deutsche Bankensystem ist faktisch kollabiert.</span></li>
+                    </ol>
                 </div>
 
-                <!-- Card: Verlauf Europa -->
-                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-orange-500 card-hover">
-                    <div class="text-orange-500 mb-4">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"></path></svg>
+                <!-- Card 3: Verflechtungen -->
+                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-pink-500 card-hover">
+                    <div class="text-pink-500 mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-history-900 mb-4">🇪🇺 Verlauf Europa</h3>
+                    <h3 class="text-xl font-bold text-history-900 mb-4">C. Die fatale Verflechtung: USA &amp; Deutschland</h3>
                     <ul class="space-y-3 text-slate-600 text-sm">
-                        <li class="flex items-start"><span class="text-orange-400 font-bold mr-2 shrink-0">Mai '31</span><span>Credit-Anstalt Wien kollabiert → Bankenpanikcaskade in Mitteleuropa.</span></li>
-                        <li class="flex items-start"><span class="text-orange-400 font-bold mr-2 shrink-0">Jun '31</span><span>Hoover-Moratorium: einjähriger Stopp aller Reparationszahlungen und Kriegsschulden.</span></li>
-                        <li class="flex items-start"><span class="text-orange-400 font-bold mr-2 shrink-0">Jul '31</span><span>Pfundkrise: Bank of England verliert Goldreserven, Währungsvertrauen schwindet.</span></li>
-                        <li class="flex items-start"><span class="text-orange-400 font-bold mr-2 shrink-0">Sep '31</span><span>Großbritannien verlässt Goldstandard – 14 weitere Länder folgen binnen Monaten.</span></li>
+                        <li class="flex items-start"><span class="text-pink-500 font-bold mr-2">\ud83d\udd04</span><span><strong>Kreislaufsystem (Dawes-/Young-Plan):</strong> US-Kapital \u2192 Deutschland (Reparationen) \u2192 Alliierte \u2192 USA (Kriegsschulden). Ein fragiles, einziges Abh\u00e4ngigkeitssystem.</span></li>
+                        <li class="flex items-start"><span class="text-pink-500 font-bold mr-2">\ud83d\udcb8</span><span><strong>Ab 1929:</strong> US-Banken ziehen kurzfristige Kredite ab; dt. Banken hatten diese in langfristige Investitionen gesteckt \u2014 Liquidit\u00e4tsfalle.</span></li>
+                        <li class="flex items-start"><span class="text-pink-500 font-bold mr-2">\ud83c\udfe6</span><span><strong>Strukturschw\u00e4che:</strong> Deutschlands Banken hatten zu geringes Eigenkapital. Bei Abzug ausl\u00e4ndischen Kapitals waren sie sofort insolvent.</span></li>
+                        <li class="flex items-start"><span class="text-pink-500 font-bold mr-2">\ud83d\udcca</span><span><strong>Ausma\u00df:</strong> Bis 1932 ca. 6 Mio. offizielle Arbeitslose in Deutschland, real sch\u00e4tzungsweise 8 Mio. inklusive Kurzarbeit.</span></li>
                     </ul>
                 </div>
 
-                <!-- Card: Verlauf Deutschland -->
-                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-history-accent card-hover">
-                    <div class="text-red-700 mb-4">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                <!-- Card 4: Politische Folgen -->
+                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-green-500 card-hover">
+                    <div class="text-green-500 mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-history-900 mb-4">🇩🇪 Verlauf Deutschland</h3>
+                    <h3 class="text-xl font-bold text-history-900 mb-4">D. Politische &amp; gesellschaftliche Folgen</h3>
                     <ul class="space-y-3 text-slate-600 text-sm">
-                        <li class="flex items-start"><span class="text-red-500 font-bold mr-2 shrink-0">1929</span><span>Kreditabzug: US-Banken kündigen kurzfristige Darlehen – deutsche Betriebe ohne Liquidität.</span></li>
-                        <li class="flex items-start"><span class="text-red-500 font-bold mr-2 shrink-0">1930</span><span>Brüning: Deflationspolitik via Art. 48, Lohnkürzungen, Ausgabenabbau vertieft Krise.</span></li>
-                        <li class="flex items-start"><span class="text-red-500 font-bold mr-2 shrink-0">Jul '31</span><span>Danat-Bank pleite → Bankfeiertage, Standstill-Abkommen (eingefrorene Auslandskredite).</span></li>
-                        <li class="flex items-start"><span class="text-red-500 font-bold mr-2 shrink-0">1932</span><span>6 Mio. Arbeitslose (≈ 30 %) – soziale Not auf historischem Höchststand.</span></li>
-                    </ul>
-                </div>
-
-                <!-- Card: Politische Folgen -->
-                <div class="bg-white rounded-xl shadow-md p-8 border-t-4 border-purple-600 card-hover">
-                    <div class="text-purple-600 mb-4">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-history-900 mb-4">⚡ Politische Folgen</h3>
-                    <ul class="space-y-3 text-slate-600 text-sm">
-                        <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 shrink-0">Mär '30</span><span>Ende der Großen Koalition: Scheitern am Streit über Arbeitslosenversicherung.</span></li>
-                        <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 shrink-0">Sep '30</span><span>Reichstagswahl: NSDAP springt von 2,6 % auf 18,3 % – zweitstärkste Partei.</span></li>
-                        <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 shrink-0">1931</span><span>Regieren per Notverordnung: Parlament entmachtet, demokratische Strukturen ausgehöhlt.</span></li>
-                        <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 shrink-0">→ 1933</span><span>Radikalisierung &amp; NSDAP-Aufstieg bereiten den Boden für Hitlers Machtergreifung.</span></li>
-                    </ul>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Schlüsselzusammenhang -->
-        <section class="mb-12">
-            <div class="bg-gradient-to-r from-history-900 to-red-900 text-white rounded-2xl shadow-xl p-8 md:p-12">
-                <h3 class="text-2xl font-bold mb-4">💡 Der entscheidende Mechanismus: Die fatale Kapitalabhängigkeit</h3>
-                <p class="text-slate-200 leading-relaxed mb-4">
-                    Der Kern der deutschen Katastrophe war strukturell: Deutschland hatte sich im Rahmen des <strong class="text-amber-300">Dawes-Plans (1924)</strong> in massive Abhängigkeit von kurzfristigen US-Krediten begeben. Diese Gelder flossen zwar als Reparationen weiter nach Frankreich und Großbritannien, doch das System ruhte auf instabilen Fundamenten.
-                </p>
-                <p class="text-slate-200 leading-relaxed">
-                    Als nach dem Schwarzen Freitag 1929 amerikanische Banken ihre Kredite in Europa schlagartig abzogen, kollabierte dieses Kartenhaus. Deutsche Banken hatten zu wenig Eigenkapital, um den Abfluss zu kompensieren. Das Ergebnis: Bankenzusammenbruch 1931, Massenarbeitslosigkeit und eine politische Radikalisierung, die direkt in die <strong class="text-amber-300">Machtergreifung Hitlers 1933</strong> mündete.
-                </p>
-            </div>
-        </section>
-    </main>
-
-    <footer class="bg-slate-900 text-slate-400 py-8 text-center">
-        <div class="max-w-7xl mx-auto px-4">
-            <p>© Visualisierung historischer Zusammenhänge | basierend auf Aufgabe 1, Seite 225</p>
-        </div>
-    </footer>
-
-</body>
-</html>
-
+                        <li class="flex items-start"><span class="text-green-500 font-bold
